@@ -80,32 +80,32 @@ fn main() {
     println!("Hello, Advent of Code 2023!");
 
     let days: [&mut dyn Day; 26] = [
-        &mut Day0::new("data/day0.txt"),  // Placeholder
-        &mut Day1::new("data/day1.txt"),  // Dec 1
-        &mut Day2::new("data/day2.txt"),
-        &mut Day3::new("data/day3.txt"),
-        &mut Day4::new("data/day4.txt"),
-        &mut Day5::new("data/day5.txt"),  // Dec 5
-        &mut Day6::new("data/day6.txt"),
-        &mut Day7::new("data/day7.txt"),
-        &mut Day8::new("data/day8.txt"),
-        &mut Day9::new("data/day9.txt"),
-        &mut Day10::new("data/day10.txt"),  // Dec 10
-        &mut Day11::new("data/day11.txt"),
-        &mut Day12::new("data/day12.txt"),
-        &mut Day13::new("data/day13.txt"),
-        &mut Day14::new("data/day14.txt"),
-        &mut Day15::new("data/day15.txt"),  // Dec 15
-        &mut Day16::new("data/day16.txt"),
-        &mut Day17::new("data/day17.txt"),
-        &mut Day18::new("data/day18.txt"),
-        &mut Day19::new("data/day19.txt"),
-        &mut Day20::new("data/day20.txt"),  // Dec 20
-        &mut Day21::new("data/day21.txt"),
-        &mut Day22::new("data/day22.txt"),
-        &mut Day23::new("data/day23.txt"),
-        &mut Day24::new("data/day24.txt"),
-        &mut Day25::new("data/day25.txt"),  // Dec 25
+        &mut Day0::new("data_aoc2023/day0.txt"),  // Placeholder
+        &mut Day1::new("data_aoc2023/day1.txt"),  // Dec 1
+        &mut Day2::new("data_aoc2023/day2.txt"),
+        &mut Day3::new("data_aoc2023/day3.txt"),
+        &mut Day4::new("data_aoc2023/day4.txt"),
+        &mut Day5::new("data_aoc2023/day5.txt"),  // Dec 5
+        &mut Day6::new("data_aoc2023/day6.txt"),
+        &mut Day7::new("data_aoc2023/day7.txt"),
+        &mut Day8::new("data_aoc2023/day8.txt"),
+        &mut Day9::new("data_aoc2023/day9.txt"),
+        &mut Day10::new("data_aoc2023/day10.txt"),  // Dec 10
+        &mut Day11::new("data_aoc2023/day11.txt"),
+        &mut Day12::new("data_aoc2023/day12.txt"),
+        &mut Day13::new("data_aoc2023/day13.txt"),
+        &mut Day14::new("data_aoc2023/day14.txt"),
+        &mut Day15::new("data_aoc2023/day15.txt"),  // Dec 15
+        &mut Day16::new("data_aoc2023/day16.txt"),
+        &mut Day17::new("data_aoc2023/day17.txt"),
+        &mut Day18::new("data_aoc2023/day18.txt"),
+        &mut Day19::new("data_aoc2023/day19.txt"),
+        &mut Day20::new("data_aoc2023/day20.txt"),  // Dec 20
+        &mut Day21::new("data_aoc2023/day21.txt"),
+        &mut Day22::new("data_aoc2023/day22.txt"),
+        &mut Day23::new("data_aoc2023/day23.txt"),
+        &mut Day24::new("data_aoc2023/day24.txt"),
+        &mut Day25::new("data_aoc2023/day25.txt"),  // Dec 25
     ];
 
     let target_day = 0;
@@ -127,4 +127,22 @@ fn main() {
         }
     }
 
+}
+
+#[cfg(test)]
+mod test {
+    use crate::day::{Day, Answer};
+    use crate::Day1;
+
+    #[test]
+    fn test_day1_part1() {
+        let d: Day1 = Day1::new("data_aoc2023/day1.txt");
+        assert_eq!(d.part1(), Answer::Numeric(55029));
+    }
+
+    #[test]
+    fn test_day1_part2() {
+        let d: Day1 = Day1::new("data_aoc2023/day1.txt");
+        assert_eq!(d.part2(), Answer::Numeric(55686));  // Not 55680
+    }
 }
