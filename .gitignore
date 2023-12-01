@@ -17,3 +17,6 @@ Cargo.lock
 # Added by cargo
 
 /target
+
+# data_aoc2023 is its own private repo.
+data_aoc2023/*
