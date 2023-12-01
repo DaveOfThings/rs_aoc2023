@@ -11,39 +11,31 @@ pub struct Day1 {
 // A representation of the puzzle inputs.
 // Today it's just a list (Vec) of Strings, one for each input line.
 struct Input {
-    lines: Vec<String>,
+    pairs: Vec<(usize, usize)>,
 }
 
 impl Input {
-    fn read(input: impl Read) -> Result<Input, String> {
-        let mut lines: Vec<String> = Vec::new();
+    // Read input stream, produce Input
+    // uses parse_line() (below) to produce a pair of numbers from each input line.
+    // Input interpretation varies between part1 and part2 so a bool is passed in
+    // to distinguish those cases.
+    fn read(input: impl Read, part2: bool) -> Result<Input, String> {
+        let mut pairs: Vec<(usize, usize)> = Vec::new();
 
         let reader = BufReader::new(input);
 
         for line in reader.lines() {
-            lines.push(line.unwrap().to_string());
+            let values = Input::parse_line(&line.unwrap(), part2);
+            pairs.push(values);
         }
         
-        Ok(Input{lines})
-    }
-}
-
-
-
-impl Day1 {
-    pub fn new(filename: &str) -> Self {
-        Self { input_filename: filename.to_string() }
+        Ok(Input{pairs})
     }
 
-    fn read_input(&self) -> Input {
-        let infile = File::open(&self.input_filename)
-            .expect(format!("Couldn't open {}", self.input_filename).as_str());
-
-        Input::read(infile)
-            .expect(format!("Error parsing {}.", self.input_filename).as_str())
-    }
-
-    fn process_input(&self, input: &Input, part2: bool) -> usize {
+    // Convert one line of input into two numbers, the first and last to appear on
+    // the line.  (Input flag, part2, determines which rules are used for
+    // recognizing numbers.)
+    fn parse_line(line: &str, part2: bool) -> (usize, usize) {
         let matches_p1: [(&str, usize); 10] = [
             ("0", 0),
             ("1", 1),
@@ -69,17 +61,25 @@ impl Day1 {
             ("nine", 9),
             ];
 
-        let mut sum = 0;
         let mut s = String::new();
-        for line in &input.lines {
-            s.clear();
-            let mut saw_first = false;
-            let mut first = 0;
-            let mut last = 0;
-            for c in line.chars() {
-                s.push(c);
+        let mut saw_first = false;
+        let mut first = 0;
+        let mut last = 0;
+        for c in line.chars() {
+            s.push(c);
 
-                for (pattern, value) in matches_p1 {
+            for (pattern, value) in matches_p1 {
+                if s.ends_with(pattern) {
+                    if !saw_first {
+                        first = value;
+                        saw_first = true;
+                    }
+                    last = value;
+                }
+            }
+
+            if part2 {
+                for (pattern, value) in matches_p2 {
                     if s.ends_with(pattern) {
                         if !saw_first {
                             first = value;
@@ -88,43 +88,48 @@ impl Day1 {
                         last = value;
                     }
                 }
-
-                if part2 {
-                    for (pattern, value) in matches_p2 {
-                        if s.ends_with(pattern) {
-                            if !saw_first {
-                                first = value;
-                                saw_first = true;
-                            }
-                            last = value;
-                        }
-                    }
-                }
             }
-
-            sum += first*10+last;
         }
 
-        sum
+        (first, last)
+    }
+}
+
+// Day1
+impl Day1 {
+    pub fn new(filename: &str) -> Self {
+        Self { input_filename: filename.to_string() }
+    }
+
+    // Helper function to open and read the input file
+    fn read_input(&self, part2: bool) -> Input {
+        let infile = File::open(&self.input_filename)
+            .expect(format!("Couldn't open {}", self.input_filename).as_str());
+
+        Input::read(infile, part2)
+            .expect(format!("Error parsing {}.", self.input_filename).as_str())
     }
 
 }
 
 impl Day for Day1 {
-    
-
+    // Compute Part 1 solution
     fn part1(&self) -> Answer {
-        let input = self.read_input();
+        // Read input file into Input struct, then sum the results.
+        let input = self.read_input(false);
 
-        let p1 = self.process_input(&input, false);
+        let p1 = input.pairs.iter().map(|(f, l)| f*10+l).sum();
 
         Answer::Numeric(p1)
     }
 
     fn part2(&self) -> Answer {
-        let input = self.read_input();
+        // Read input file into Input struct, then sum the results.
+        // (The diff between part1 and part2 is the flag passed to read_input.  It
+        // interprets numbers embedded in lines differently for each part.)
+        let input = self.read_input(true);
 
-        let p2 = self.process_input(&input, true);
+        let p2 = input.pairs.iter().map(|(f, l)| f*10+l).sum();
 
         Answer::Numeric(p2)
     }
@@ -138,14 +143,34 @@ mod test {
     use crate::day::{Day, Answer};
 
     #[test]
-    fn test_read_normal() {
+    // Read part 1 example and confirm inputs
+    fn test_read_part1() {
         let infile = File::open("examples/day1_example1.txt").unwrap();
-        let input = Input::read(infile).expect("Error parsing.");
-        assert_eq!(input.lines.len(), 4);
-        assert_eq!(input.lines[0], "1abc2");
+        let input = Input::read(infile, false).expect("Error parsing.");
+        assert_eq!(input.pairs.len(), 4);
+        assert_eq!(input.pairs[0], (1, 2));
+        assert_eq!(input.pairs[1], (3, 8));
+        assert_eq!(input.pairs[2], (1, 5));
+        assert_eq!(input.pairs[3], (7, 7));
     }
 
     #[test]
+    // Read part 2 example and confirm inputs
+    fn test_read_part2() {
+        let infile = File::open("examples/day1_example2.txt").unwrap();
+        let input = Input::read(infile, true).expect("Error parsing.");
+        assert_eq!(input.pairs.len(), 7);
+        assert_eq!(input.pairs[0], (2, 9));
+        assert_eq!(input.pairs[1], (8, 3));
+        assert_eq!(input.pairs[2], (1, 3));
+        assert_eq!(input.pairs[3], (2, 4));
+        assert_eq!(input.pairs[4], (4, 2));
+        assert_eq!(input.pairs[5], (1, 4));
+        assert_eq!(input.pairs[6], (7, 6));
+    }
+
+    #[test]
+    // Compute part 1 result on example 1 and confirm expected value.
     fn test_part1() {
         // Based on the example in part 1.
         let d: Day1 = Day1::new("examples/day1_example1.txt");
@@ -153,6 +178,7 @@ mod test {
     }
 
     #[test]
+    // Compute part 2 result on example 2 and confirm expected value.
     fn test_part2() {
         // Based on the example in part 2.
         let d: Day1 = Day1::new("examples/day1_example2.txt");
@@ -160,6 +186,10 @@ mod test {
     }
 
     #[test]
+    // Compute part 2 result on puzzle input.
+    // Despite test_part2 passing, test_part2b failed at first due to an error
+    // in numeral recognition.  The string oneight was recognized as one, not
+    // eight.
     fn test_part2b() {
         let d: Day1 = Day1::new("data_aoc2023/day1.txt");
         assert_eq!(d.part2(), Answer::Numeric(55686));
