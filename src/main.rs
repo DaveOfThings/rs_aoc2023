@@ -58,26 +58,25 @@ use day25::Day25;
 
 
 fn report_day(day: &dyn Day, day_no: usize) {
-    println!("\nDay {day_no}:");
+    
     let ans1 = day.part1();
-    let msg = match ans1 {
+    let msg1 = match ans1 {
         Answer::None => String::from("No Answer"),
         Answer::Numeric(n) => format!("{n}"),
         Answer::String(s) => format!("{s}"),
     };
-    println!("    part1: {msg}");
 
     let ans2 = day.part2();
-    let msg = match ans2 {
+    let msg2 = match ans2 {
         Answer::None => String::from("No Answer"),
         Answer::Numeric(n) => format!("{n}"),
         Answer::String(s) => format!("{s}"),
     };
-    println!("    part2: {msg}");
+    println!("Day {day_no:2}: {msg1:>16} {msg2:>16}");
 }
 
 fn main() {
-    println!("Hello, Advent of Code 2023!");
+    println!("Advent of Code 2023!\n");
 
     let days: [&mut dyn Day; 26] = [
         &mut Day0::new("data_aoc2023/day0.txt"),  // Placeholder
@@ -113,6 +112,7 @@ fn main() {
     match target_day {
         0 => {
             // report all days
+            println!("{:7} {:>16} {:>16}", "", "Part 1", "Part 2");
             for day_no in 1..=25 {
                 report_day(days[day_no], day_no);
             }
@@ -126,6 +126,7 @@ fn main() {
             println!("Day {target_day} is invalid.\n");
         }
     }
+    println!();
 
 }
 

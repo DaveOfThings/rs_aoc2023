@@ -1,41 +1,16 @@
 use std::fs::File;
-use std::io::Read;
-use std::io::{BufReader, BufRead};
 
-use crate::day::{Day, Answer};
+use crate::day::{Day, Answer, LineBasedInput};
 
 pub struct Day1 {
     input_filename: String,
 }
 
-// A representation of the puzzle inputs.
-// Today it's just a list (Vec) of Strings, one for each input line.
-struct Input {
-    pairs: Vec<(usize, usize)>,
-}
-
-impl Input {
-    // Read input stream, produce Input
-    // uses parse_line() (below) to produce a pair of numbers from each input line.
-    // Input interpretation varies between part1 and part2 so a bool is passed in
-    // to distinguish those cases.
-    fn read(input: impl Read, part2: bool) -> Result<Input, String> {
-        let mut pairs: Vec<(usize, usize)> = Vec::new();
-
-        let reader = BufReader::new(input);
-
-        for line in reader.lines() {
-            let values = Input::parse_line(&line.unwrap(), part2);
-            pairs.push(values);
-        }
-        
-        Ok(Input{pairs})
-    }
-
+impl LineBasedInput<(usize, usize)> for Day1 {
     // Convert one line of input into two numbers, the first and last to appear on
     // the line.  (Input flag, part2, determines which rules are used for
     // recognizing numbers.)
-    fn parse_line(line: &str, part2: bool) -> (usize, usize) {
+    fn parse_line(line: &str, part2: bool) -> Option<(usize, usize)> {
         let matches_p1: [(&str, usize); 10] = [
             ("0", 0),
             ("1", 1),
@@ -91,8 +66,15 @@ impl Input {
             }
         }
 
-        (first, last)
+        Some((first, last))
     }
+}
+
+
+// A representation of the puzzle inputs.
+// Today it's just a list (Vec) of Strings, one for each input line.
+struct Input {
+    pairs: Vec<(usize, usize)>,
 }
 
 // Day1
@@ -106,8 +88,7 @@ impl Day1 {
         let infile = File::open(&self.input_filename)
             .expect(format!("Couldn't open {}", self.input_filename).as_str());
 
-        Input::read(infile, part2)
-            .expect(format!("Error parsing {}.", self.input_filename).as_str())
+        Input { pairs: self.process(infile, part2) }
     }
 
 }
@@ -118,7 +99,7 @@ impl Day for Day1 {
         // Read input file into Input struct, then sum the results.
         let input = self.read_input(false);
 
-        let p1 = input.pairs.iter().map(|(f, l)| f*10+l).sum();
+        let p1 = input.pairs.iter().map(|(first, last)| first*10+last).sum();
 
         Answer::Numeric(p1)
     }
@@ -129,7 +110,7 @@ impl Day for Day1 {
         // interprets numbers embedded in lines differently for each part.)
         let input = self.read_input(true);
 
-        let p2 = input.pairs.iter().map(|(f, l)| f*10+l).sum();
+        let p2 = input.pairs.iter().map(|(first, last)| first*10+last).sum();
 
         Answer::Numeric(p2)
     }
@@ -138,15 +119,16 @@ impl Day for Day1 {
 #[cfg(test)]
 
 mod test {
-    use std::fs::File;
-    use crate::day1::{Day1, Input};
+
+    use crate::day1::Day1;
     use crate::day::{Day, Answer};
 
     #[test]
     // Read part 1 example and confirm inputs
     fn test_read_part1() {
-        let infile = File::open("examples/day1_example1.txt").unwrap();
-        let input = Input::read(infile, false).expect("Error parsing.");
+        let d = Day1::new("examples/day1_example1.txt");
+        let input = d.read_input(false);
+        
         assert_eq!(input.pairs.len(), 4);
         assert_eq!(input.pairs[0], (1, 2));
         assert_eq!(input.pairs[1], (3, 8));
@@ -157,8 +139,8 @@ mod test {
     #[test]
     // Read part 2 example and confirm inputs
     fn test_read_part2() {
-        let infile = File::open("examples/day1_example2.txt").unwrap();
-        let input = Input::read(infile, true).expect("Error parsing.");
+        let d = Day1::new("examples/day1_example2.txt");
+        let input = d.read_input(true);
         assert_eq!(input.pairs.len(), 7);
         assert_eq!(input.pairs[0], (2, 9));
         assert_eq!(input.pairs[1], (8, 3));
