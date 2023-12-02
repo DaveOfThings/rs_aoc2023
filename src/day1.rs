@@ -2,6 +2,12 @@ use std::fs::File;
 
 use crate::day::{Day, Answer, LineBasedInput};
 
+// A representation of the puzzle inputs.
+// Today it's just a list (Vec) of Strings, one for each input line.
+struct Input {
+    pairs: Vec<(usize, usize)>,
+}
+
 pub struct Day1 {
     input_filename: String,
 }
@@ -71,11 +77,6 @@ impl LineBasedInput<(usize, usize)> for Day1 {
 }
 
 
-// A representation of the puzzle inputs.
-// Today it's just a list (Vec) of Strings, one for each input line.
-struct Input {
-    pairs: Vec<(usize, usize)>,
-}
 
 // Day1
 impl Day1 {
@@ -83,20 +84,20 @@ impl Day1 {
         Self { input_filename: filename.to_string() }
     }
 
-    // Helper function to open and read the input file
+    
     fn read_input(&self, part2: bool) -> Input {
         let infile = File::open(&self.input_filename)
-            .expect(format!("Couldn't open {}", self.input_filename).as_str());
+            .expect("Failed to open puzzle input.");
 
-        Input { pairs: self.process(infile, part2) }
+        let pairs = self.process(infile, part2);
+        Input { pairs }
     }
-
 }
 
 impl Day for Day1 {
+
     // Compute Part 1 solution
     fn part1(&self) -> Answer {
-        // Read input file into Input struct, then sum the results.
         let input = self.read_input(false);
 
         let p1 = input.pairs.iter().map(|(first, last)| first*10+last).sum();
@@ -106,13 +107,14 @@ impl Day for Day1 {
 
     fn part2(&self) -> Answer {
         // Read input file into Input struct, then sum the results.
+   
         // (The diff between part1 and part2 is the flag passed to read_input.  It
         // interprets numbers embedded in lines differently for each part.)
         let input = self.read_input(true);
 
-        let p2 = input.pairs.iter().map(|(first, last)| first*10+last).sum();
+        let p1 = input.pairs.iter().map(|(first, last)| first*10+last).sum();
 
-        Answer::Numeric(p2)
+        Answer::Numeric(p1)
     }
 }
 
@@ -128,7 +130,7 @@ mod test {
     fn test_read_part1() {
         let d = Day1::new("examples/day1_example1.txt");
         let input = d.read_input(false);
-        
+                
         assert_eq!(input.pairs.len(), 4);
         assert_eq!(input.pairs[0], (1, 2));
         assert_eq!(input.pairs[1], (3, 8));
@@ -141,6 +143,7 @@ mod test {
     fn test_read_part2() {
         let d = Day1::new("examples/day1_example2.txt");
         let input = d.read_input(true);
+
         assert_eq!(input.pairs.len(), 7);
         assert_eq!(input.pairs[0], (2, 9));
         assert_eq!(input.pairs[1], (8, 3));

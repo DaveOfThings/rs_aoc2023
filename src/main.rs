@@ -137,13 +137,13 @@ mod test {
 
     #[test]
     fn test_day1_part1() {
-        let d: Day1 = Day1::new("data_aoc2023/day1.txt");
+        let mut d: Day1 = Day1::new("data_aoc2023/day1.txt");
         assert_eq!(d.part1(), Answer::Numeric(55029));
     }
 
     #[test]
     fn test_day1_part2() {
-        let d: Day1 = Day1::new("data_aoc2023/day1.txt");
+        let mut d: Day1 = Day1::new("data_aoc2023/day1.txt");
         assert_eq!(d.part2(), Answer::Numeric(55686));  // Not 55680
     }
 }

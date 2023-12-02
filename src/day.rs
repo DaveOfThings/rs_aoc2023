@@ -10,7 +10,6 @@ pub enum Answer {
 }
 
 pub trait Day {
-
     fn part1(&self) -> Answer {
         Answer::None
     }
