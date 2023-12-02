@@ -133,17 +133,29 @@ fn main() {
 #[cfg(test)]
 mod test {
     use crate::day::{Day, Answer};
-    use crate::Day1;
+    use crate::{Day1, Day2};
 
     #[test]
     fn test_day1_part1() {
-        let mut d: Day1 = Day1::new("data_aoc2023/day1.txt");
+        let d: Day1 = Day1::new("data_aoc2023/day1.txt");
         assert_eq!(d.part1(), Answer::Numeric(55029));
     }
 
     #[test]
     fn test_day1_part2() {
-        let mut d: Day1 = Day1::new("data_aoc2023/day1.txt");
+        let d: Day1 = Day1::new("data_aoc2023/day1.txt");
         assert_eq!(d.part2(), Answer::Numeric(55686));  // Not 55680
+    }
+
+    #[test]
+    fn test_day2_part1() {
+        let d = Day2::new("data_aoc2023/day2.txt");
+        assert_eq!(d.part1(), Answer::Numeric(1853));
+    }
+
+    #[test]
+    fn test_day2_part2() {
+        let d = Day2::new("data_aoc2023/day2.txt");
+        assert_eq!(d.part2(), Answer::Numeric(72706));
     }
 }
