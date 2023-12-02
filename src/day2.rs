@@ -20,6 +20,10 @@ struct Game {
 }
 
 impl Game {
+    fn possible(&self) -> bool {
+        self.plays.iter().fold(true, |summary, play| summary && play.possible())
+    }
+
     fn power(&self) -> usize {
         let mut min_red = 0;
         let mut min_green = 0;
@@ -54,7 +58,7 @@ impl Day2 {
         Self { input_filename: filename.to_string()}
     }
 
-    fn read_input(&self, part2: bool) -> Input {
+    fn read_input(&self, _part2: bool) -> Input {
         let infile = File::open(&self.input_filename).expect("Failed to open puzzle input.");
         let records = self.process(infile, false);
         
@@ -68,16 +72,21 @@ impl LineBasedInput<Game> for Day2 {
         // Process lines that look like this:
         // "Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
 
-        let split1: Vec<&str> = line.split(":").collect::<Vec<&str>>(); // ("Game 5", "6 rd, 1 blue ...")
+        // ("Game 5", "6 rd, 1 blue ...")
+        let split1: Vec<&str> = line.split(":").collect::<Vec<&str>>(); 
 
         let game_no = split1[0].split(" ").collect::<Vec<&str>>()[1].parse::<usize>().unwrap();
-        let split2 = split1[1].split(";"); // "6 red, 1 blue ...", "2 blue, 1 red, ...";
+
+        // "6 red, 1 blue ...", "2 blue, 1 red, ...";
+        let split2 = split1[1].split(";"); 
 
         let mut plays: Vec<Play> = Vec::new();
         for play_str in split2 {
             let mut play = Play { red: 0, green: 0, blue: 0 };
+
+            // Split into "6 red"
             for show_str in play_str.split(",") {
-                // println!("What do we have? '{show_str}'");
+                // "6", "red"
                 let split3 = show_str.strip_prefix(" ")?.split(" ").collect::<Vec<&str>>(); // "6", "red"
                 let n = split3[0].parse::<usize>().unwrap();
                 let color = split3[1];
@@ -102,33 +111,20 @@ impl Day for Day2 {
 
 
     fn part1(&self) -> Answer {
-        let infile = File::open(&self.input_filename).expect("Failed to open puzzle input.");
-        let input = Input {games: self.process(infile, false)};
+        let input = self.read_input(false);
 
-        let mut sum = 0;
-        for game in input.games {
-            let mut possible = true;
-            for play in game.plays {
-                if !play.possible() {
-                    possible = false;
-                }
-            }
-            if possible {
-                sum += game.game_no;
-            }    
-        }
+        // Sum all the game numbers where the plays are actually possible.
+        let sum = 
+            input.games.iter().filter(|game| game.possible()).map(|game| game.game_no).sum();
 
         Answer::Numeric(sum)
     }
 
     fn part2(&self) -> Answer {
-        let infile = File::open(&self.input_filename).expect("Failed to open puzzle input.");
-        let input = Input {games: self.process(infile, true)};
+        let input = self.read_input(true);
 
-        let mut sum = 0;
-        for game in input.games {
-            sum += game.power();
-        }
+        let sum = 
+            input.games.iter().map(|game| game.power()).sum();
 
         Answer::Numeric(sum)
 
@@ -142,7 +138,7 @@ mod tests {
 
     #[test]
     fn test_input_p1() {
-        let mut d = Day2::new("examples/day2_example1.txt");
+        let d = Day2::new("examples/day2_example1.txt");
         let input = d.read_input(false);
 
         assert_eq!(input.games.len(), 5);
@@ -151,7 +147,7 @@ mod tests {
 
     #[test]
     fn test_input_p2() {
-        let mut d = Day2::new("examples/day2_example1.txt");
+        let d = Day2::new("examples/day2_example1.txt");
         let input = d.read_input(true);
 
         assert_eq!(input.games.len(), 5);
