@@ -142,7 +142,6 @@ mod tests {
         let input = d.read_input(false);
 
         assert_eq!(input.games.len(), 5);
-
     }
 
     #[test]
