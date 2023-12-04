@@ -133,54 +133,295 @@ fn main() {
 #[cfg(test)]
 mod test {
     use crate::day::{Day, Answer};
-    use crate::{Day1, Day2, Day3, Day4};
+    use crate::{DAYS};
+
+    #[test]
+    fn test_day0_part1() {
+        let d: &dyn Day = DAYS[0];
+        assert_eq!(d.part1(), Answer::None);
+    }
+
+    #[test]
+    fn test_day0_part2() {
+        let d: &dyn Day = DAYS[0];
+        assert_eq!(d.part2(), Answer::None);
+    }
 
     #[test]
     fn test_day1_part1() {
-        let d: Day1 = Day1::new("data_aoc2023/day1.txt");
+        let d: &dyn Day = DAYS[1];
         assert_eq!(d.part1(), Answer::Numeric(55029));
     }
 
     #[test]
     fn test_day1_part2() {
-        let d: Day1 = Day1::new("data_aoc2023/day1.txt");
+        let d: &dyn Day = DAYS[1];
         assert_eq!(d.part2(), Answer::Numeric(55686));  // Not 55680
     }
 
     #[test]
     fn test_day2_part1() {
-        let d = Day2::new("data_aoc2023/day2.txt");
+        let d: &dyn Day = DAYS[2];
         assert_eq!(d.part1(), Answer::Numeric(1853));
     }
 
     #[test]
     fn test_day2_part2() {
-        let d = Day2::new("data_aoc2023/day2.txt");
+        let d: &dyn Day = DAYS[2];
         assert_eq!(d.part2(), Answer::Numeric(72706));
     }
 
     #[test]
     fn test_day3_part1() {
-        let d = Day3::new("data_aoc2023/day3.txt");
+        let d: &dyn Day = DAYS[3];
         assert_ne!(d.part1(), Answer::Numeric(508789));
         assert_eq!(d.part1(), Answer::Numeric(525911));
     }
 
     #[test]
     fn test_day3_part2() {
-        let d = Day3::new("data_aoc2023/day3.txt");
+        let d: &dyn Day = DAYS[3];
         assert_eq!(d.part2(), Answer::Numeric(75805607));
     }
 
     #[test]
     fn test_day4_part1() {
-        let d = Day4::new("data_aoc2023/day4.txt");
+        let d: &dyn Day = DAYS[4];
         assert_eq!(d.part1(), Answer::Numeric(24160));
     }
 
     #[test]
     fn test_day4_part2() {
-        let d = Day4::new("data_aoc2023/day4.txt");
+        let d: &dyn Day = DAYS[4];
         assert_eq!(d.part2(), Answer::Numeric(5659035));
     }
+    
+    #[test]
+    fn test_day5_part1() {
+        let d: &dyn Day = DAYS[5];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day5_part2() {
+        let d: &dyn Day = DAYS[5];
+        assert_eq!(d.part2(), Answer::None);
+    }
+        
+    #[test]
+    fn test_day6_part1() {
+        let d: &dyn Day = DAYS[6];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day6_part2() {
+        let d: &dyn Day = DAYS[6];
+        assert_eq!(d.part2(), Answer::None);
+    }
+        
+    #[test]
+    fn test_day7_part1() {
+        let d: &dyn Day = DAYS[7];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day7_part2() {
+        let d: &dyn Day = DAYS[7];
+        assert_eq!(d.part2(), Answer::None);
+    }
+        
+    #[test]
+    fn test_day8_part1() {
+        let d: &dyn Day = DAYS[8];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day8_part2() {
+        let d: &dyn Day = DAYS[8];
+        assert_eq!(d.part2(), Answer::None);
+    }
+        
+    #[test]
+    fn test_day9_part1() {
+        let d: &dyn Day = DAYS[9];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day9_part2() {
+        let d: &dyn Day = DAYS[9];
+        assert_eq!(d.part2(), Answer::None);
+    }
+        
+    #[test]
+    fn test_day10_part1() {
+        let d: &dyn Day = DAYS[10];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day10_part2() {
+        let d: &dyn Day = DAYS[10];
+        assert_eq!(d.part2(), Answer::None);
+    }
+        
+    #[test]
+    fn test_day11_part1() {
+        let d: &dyn Day = DAYS[11];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day11_part2() {
+        let d: &dyn Day = DAYS[11];
+        assert_eq!(d.part2(), Answer::None);
+    }
+        
+    #[test]
+    fn test_day12_part1() {
+        let d: &dyn Day = DAYS[12];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day12_part2() {
+        let d: &dyn Day = DAYS[12];
+        assert_eq!(d.part2(), Answer::None);
+    }
+        
+    #[test]
+    fn test_day13_part1() {
+        let d: &dyn Day = DAYS[13];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day13_part2() {
+        let d: &dyn Day = DAYS[13];
+        assert_eq!(d.part2(), Answer::None);
+    }
+        
+    #[test]
+    fn test_day14_part1() {
+        let d: &dyn Day = DAYS[14];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day14_part2() {
+        let d: &dyn Day = DAYS[14];
+        assert_eq!(d.part2(), Answer::None);
+    }
+        
+    #[test]
+    fn test_day15_part1() {
+        let d: &dyn Day = DAYS[15];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day15_part2() {
+        let d: &dyn Day = DAYS[15];
+        assert_eq!(d.part2(), Answer::None);
+    }
+        
+    #[test]
+    fn test_day16_part1() {
+        let d: &dyn Day = DAYS[16];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day16_part2() {
+        let d: &dyn Day = DAYS[16];
+        assert_eq!(d.part2(), Answer::None);
+    }
+        
+    #[test]
+    fn test_day17_part1() {
+        let d: &dyn Day = DAYS[17];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day17_part2() {
+        let d: &dyn Day = DAYS[17];
+        assert_eq!(d.part2(), Answer::None);
+    }
+        
+    #[test]
+    fn test_day18_part1() {
+        let d: &dyn Day = DAYS[18];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day18_part2() {
+        let d: &dyn Day = DAYS[18];
+        assert_eq!(d.part2(), Answer::None);
+    }
+        
+    #[test]
+    fn test_day19_part1() {
+        let d: &dyn Day = DAYS[19];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day19_part2() {
+        let d: &dyn Day = DAYS[19];
+        assert_eq!(d.part2(), Answer::None);
+    }
+        
+    #[test]
+    fn test_day20_part1() {
+        let d: &dyn Day = DAYS[20];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day20_part2() {
+        let d: &dyn Day = DAYS[20];
+        assert_eq!(d.part2(), Answer::None);
+    }
+        
+    #[test]
+    fn test_day21_part1() {
+        let d: &dyn Day = DAYS[21];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day22_part2() {
+        let d: &dyn Day = DAYS[22];
+        assert_eq!(d.part2(), Answer::None);
+    }
+        
+    #[test]
+    fn test_day23_part1() {
+        let d: &dyn Day = DAYS[23];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day24_part2() {
+        let d: &dyn Day = DAYS[24];
+        assert_eq!(d.part2(), Answer::None);
+    }
+        
+    #[test]
+    fn test_day25_part1() {
+        let d: &dyn Day = DAYS[25];
+        assert_eq!(d.part2(), Answer::None);
+    }
+    
+    #[test]
+    fn test_day25_part2() {
+        let d: &dyn Day = DAYS[25];
+        assert_eq!(d.part2(), Answer::None);
+    }
+
 }

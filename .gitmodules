@@ -1,0 +1,3 @@
+[submodule "data_aoc2023"]
+	path = data_aoc2023
+	url = git@github.com:dave20874/data_aoc2023.git
