@@ -9,7 +9,8 @@ pub enum Answer {
     String(String),
 }
 
-pub trait Day {
+pub trait Day: Sync {
+
     fn part1(&self) -> Answer {
         Answer::None
     }

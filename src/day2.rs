@@ -49,13 +49,13 @@ struct Input {
     games: Vec<Game>,
 }
 
-pub struct Day2 {
-    input_filename: String,
+pub struct Day2<'a>{
+    input_filename: &'a str,
 }
 
-impl Day2 {
-    pub fn new(filename: &str) -> Self {
-        Self { input_filename: filename.to_string()}
+impl<'a> Day2<'a> {
+    pub const fn new(filename: &'a str) -> Self {
+        Self { input_filename: filename}
     }
 
     fn read_input(&self, _part2: bool) -> Input {
@@ -66,7 +66,7 @@ impl Day2 {
     }
 }
 
-impl LineBasedInput<Game> for Day2 {
+impl<'a> LineBasedInput<Game> for Day2<'a> {
 
     fn parse_line(line: &str, _part2: bool) -> Option<Game> {
         // Process lines that look like this:
@@ -107,7 +107,7 @@ impl LineBasedInput<Game> for Day2 {
     }
 }
 
-impl Day for Day2 {
+impl<'a> Day for Day2<'a> {
 
 
     fn part1(&self) -> Answer {

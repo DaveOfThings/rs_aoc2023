@@ -1,16 +1,16 @@
 use crate::day::{Day, Answer};
 
-pub struct Day8 {
-    _input_filename: String,
+pub struct Day8<'a> {
+    _input_filename: &'a str,
 }
 
-impl Day8 {
-    pub fn new(filename: &str) -> Self {
-        Self { _input_filename: filename.to_string() }
+impl<'a> Day8<'a> {
+    pub const fn new(filename: &'a str) -> Self {
+        Self { _input_filename: filename }
     }
 }
 
-impl Day for Day8 {
+impl<'a> Day for Day8<'a> {
     fn part1(&self) -> Answer {
         Answer::None
     }

@@ -8,11 +8,11 @@ struct Input {
     pairs: Vec<(usize, usize)>,
 }
 
-pub struct Day1 {
-    input_filename: String,
+pub struct Day1<'a> {
+    input_filename: &'a str,
 }
 
-impl LineBasedInput<(usize, usize)> for Day1 {
+impl<'a> LineBasedInput<(usize, usize)> for Day1<'a> {
     // Convert one line of input into two numbers, the first and last to appear on
     // the line.  (Input flag, part2, determines which rules are used for
     // recognizing numbers.)
@@ -79,9 +79,9 @@ impl LineBasedInput<(usize, usize)> for Day1 {
 
 
 // Day1
-impl Day1 {
-    pub fn new(filename: &str) -> Self {
-        Self { input_filename: filename.to_string() }
+impl<'a> Day1<'a> {
+    pub const fn new(filename: &'a str) -> Self {
+        Self { input_filename: filename }
     }
 
     
@@ -94,7 +94,7 @@ impl Day1 {
     }
 }
 
-impl Day for Day1 {
+impl<'a> Day for Day1<'a> {
 
     // Compute Part 1 solution
     fn part1(&self) -> Answer {

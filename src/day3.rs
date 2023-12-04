@@ -95,13 +95,13 @@ impl Input {
 }
 
 
-pub struct Day3 {
-    input_filename: String,
+pub struct Day3<'a> {
+    input_filename: &'a str,
 }
 
-impl Day3 {
-    pub fn new(filename: &str) -> Self {
-        Self { input_filename: filename.to_string() }
+impl<'a> Day3<'a> {
+    pub const fn new(filename: &'a str) -> Self {
+        Self { input_filename: filename }
     }
 
     fn read_input(&self, _part2: bool) -> Input {
@@ -169,13 +169,13 @@ impl Day3 {
 
 }
 
-impl LineBasedInput<Line> for Day3 {
+impl<'a> LineBasedInput<Line> for Day3<'a> {
     fn parse_line(line: &str, _part2: bool) -> Option<Line> {
         Some(Line {text: line.to_string()})
     }
 }
 
-impl Day for Day3 {
+impl<'a> Day for Day3<'a> {
 
 
     fn part1(&self) -> Answer {

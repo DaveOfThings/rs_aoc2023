@@ -75,37 +75,37 @@ fn report_day(day: &dyn Day, day_no: usize) {
     println!("Day {day_no:2}: {msg1:>16} {msg2:>16}");
 }
 
+static DAYS: [&dyn Day; 26] = [
+    &Day0::new("data_aoc2023/day0.txt"),  // Placeholder
+    &Day1::new("data_aoc2023/day1.txt"),  // Dec 1
+    &Day2::new("data_aoc2023/day2.txt"),
+    &Day3::new("data_aoc2023/day3.txt"),
+    &Day4::new("data_aoc2023/day4.txt"),
+    &Day5::new("data_aoc2023/day5.txt"),  // Dec 5
+    &Day6::new("data_aoc2023/day6.txt"),
+    &Day7::new("data_aoc2023/day7.txt"),
+    &Day8::new("data_aoc2023/day8.txt"),
+    &Day9::new("data_aoc2023/day9.txt"),
+    &Day10::new("data_aoc2023/day10.txt"),  // Dec 10
+    &Day11::new("data_aoc2023/day11.txt"),
+    &Day12::new("data_aoc2023/day12.txt"),
+    &Day13::new("data_aoc2023/day13.txt"),
+    &Day14::new("data_aoc2023/day14.txt"),
+    &Day15::new("data_aoc2023/day15.txt"),  // Dec 15
+    &Day16::new("data_aoc2023/day16.txt"),
+    &Day17::new("data_aoc2023/day17.txt"),
+    &Day18::new("data_aoc2023/day18.txt"),
+    &Day19::new("data_aoc2023/day19.txt"),
+    &Day20::new("data_aoc2023/day20.txt"),  // Dec 20
+    &Day21::new("data_aoc2023/day21.txt"),
+    &Day22::new("data_aoc2023/day22.txt"),
+    &Day23::new("data_aoc2023/day23.txt"),
+    &Day24::new("data_aoc2023/day24.txt"),
+    &Day25::new("data_aoc2023/day25.txt"),  // Dec 25
+];
+
 fn main() {
     println!("Advent of Code 2023!\n");
-
-    let days: [&mut dyn Day; 26] = [
-        &mut Day0::new("data_aoc2023/day0.txt"),  // Placeholder
-        &mut Day1::new("data_aoc2023/day1.txt"),  // Dec 1
-        &mut Day2::new("data_aoc2023/day2.txt"),
-        &mut Day3::new("data_aoc2023/day3.txt"),
-        &mut Day4::new("data_aoc2023/day4.txt"),
-        &mut Day5::new("data_aoc2023/day5.txt"),  // Dec 5
-        &mut Day6::new("data_aoc2023/day6.txt"),
-        &mut Day7::new("data_aoc2023/day7.txt"),
-        &mut Day8::new("data_aoc2023/day8.txt"),
-        &mut Day9::new("data_aoc2023/day9.txt"),
-        &mut Day10::new("data_aoc2023/day10.txt"),  // Dec 10
-        &mut Day11::new("data_aoc2023/day11.txt"),
-        &mut Day12::new("data_aoc2023/day12.txt"),
-        &mut Day13::new("data_aoc2023/day13.txt"),
-        &mut Day14::new("data_aoc2023/day14.txt"),
-        &mut Day15::new("data_aoc2023/day15.txt"),  // Dec 15
-        &mut Day16::new("data_aoc2023/day16.txt"),
-        &mut Day17::new("data_aoc2023/day17.txt"),
-        &mut Day18::new("data_aoc2023/day18.txt"),
-        &mut Day19::new("data_aoc2023/day19.txt"),
-        &mut Day20::new("data_aoc2023/day20.txt"),  // Dec 20
-        &mut Day21::new("data_aoc2023/day21.txt"),
-        &mut Day22::new("data_aoc2023/day22.txt"),
-        &mut Day23::new("data_aoc2023/day23.txt"),
-        &mut Day24::new("data_aoc2023/day24.txt"),
-        &mut Day25::new("data_aoc2023/day25.txt"),  // Dec 25
-    ];
 
     let target_day = 0;
 
@@ -114,12 +114,12 @@ fn main() {
             // report all days
             println!("{:7} {:>16} {:>16}", "", "Part 1", "Part 2");
             for day_no in 1..=25 {
-                report_day(days[day_no], day_no);
+                report_day(DAYS[day_no], day_no);
             }
         }
         1..=25 => {
             // report a specific day
-            report_day(days[target_day], target_day);
+            report_day(DAYS[target_day], target_day);
         }
         _ => {
             // invalid day 
@@ -133,7 +133,7 @@ fn main() {
 #[cfg(test)]
 mod test {
     use crate::day::{Day, Answer};
-    use crate::{Day1, Day2, Day3};
+    use crate::{Day1, Day2, Day3, Day4};
 
     #[test]
     fn test_day1_part1() {
@@ -170,5 +170,17 @@ mod test {
     fn test_day3_part2() {
         let d = Day3::new("data_aoc2023/day3.txt");
         assert_eq!(d.part2(), Answer::Numeric(75805607));
+    }
+
+    #[test]
+    fn test_day4_part1() {
+        let d = Day4::new("data_aoc2023/day4.txt");
+        assert_eq!(d.part1(), Answer::Numeric(24160));
+    }
+
+    #[test]
+    fn test_day4_part2() {
+        let d = Day4::new("data_aoc2023/day4.txt");
+        assert_eq!(d.part2(), Answer::Numeric(5659035));
     }
 }
