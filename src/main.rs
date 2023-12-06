@@ -199,7 +199,7 @@ mod test {
     #[test]
     fn test_day5_part1() {
         let d: &dyn Day = DAYS[5];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::Numeric(51752125));
     }
     
     #[test]
@@ -211,7 +211,7 @@ mod test {
     #[test]
     fn test_day6_part1() {
         let d: &dyn Day = DAYS[6];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::None);
     }
     
     #[test]
@@ -223,7 +223,7 @@ mod test {
     #[test]
     fn test_day7_part1() {
         let d: &dyn Day = DAYS[7];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::None);
     }
     
     #[test]
@@ -235,7 +235,7 @@ mod test {
     #[test]
     fn test_day8_part1() {
         let d: &dyn Day = DAYS[8];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::None);
     }
     
     #[test]
@@ -247,7 +247,7 @@ mod test {
     #[test]
     fn test_day9_part1() {
         let d: &dyn Day = DAYS[9];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::None);
     }
     
     #[test]
@@ -259,7 +259,7 @@ mod test {
     #[test]
     fn test_day10_part1() {
         let d: &dyn Day = DAYS[10];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::None);
     }
     
     #[test]
@@ -271,7 +271,7 @@ mod test {
     #[test]
     fn test_day11_part1() {
         let d: &dyn Day = DAYS[11];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::None);
     }
     
     #[test]
@@ -283,7 +283,7 @@ mod test {
     #[test]
     fn test_day12_part1() {
         let d: &dyn Day = DAYS[12];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::None);
     }
     
     #[test]
@@ -295,7 +295,7 @@ mod test {
     #[test]
     fn test_day13_part1() {
         let d: &dyn Day = DAYS[13];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::None);
     }
     
     #[test]
@@ -307,7 +307,7 @@ mod test {
     #[test]
     fn test_day14_part1() {
         let d: &dyn Day = DAYS[14];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::None);
     }
     
     #[test]
@@ -319,7 +319,7 @@ mod test {
     #[test]
     fn test_day15_part1() {
         let d: &dyn Day = DAYS[15];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::None);
     }
     
     #[test]
@@ -331,7 +331,7 @@ mod test {
     #[test]
     fn test_day16_part1() {
         let d: &dyn Day = DAYS[16];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::None);
     }
     
     #[test]
@@ -343,7 +343,7 @@ mod test {
     #[test]
     fn test_day17_part1() {
         let d: &dyn Day = DAYS[17];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::None);
     }
     
     #[test]
@@ -355,7 +355,7 @@ mod test {
     #[test]
     fn test_day18_part1() {
         let d: &dyn Day = DAYS[18];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::None);
     }
     
     #[test]
@@ -367,7 +367,7 @@ mod test {
     #[test]
     fn test_day19_part1() {
         let d: &dyn Day = DAYS[19];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::None);
     }
     
     #[test]
@@ -379,7 +379,7 @@ mod test {
     #[test]
     fn test_day20_part1() {
         let d: &dyn Day = DAYS[20];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::None);
     }
     
     #[test]
@@ -391,7 +391,7 @@ mod test {
     #[test]
     fn test_day21_part1() {
         let d: &dyn Day = DAYS[21];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::None);
     }
     
     #[test]
@@ -403,7 +403,7 @@ mod test {
     #[test]
     fn test_day23_part1() {
         let d: &dyn Day = DAYS[23];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::None);
     }
     
     #[test]
@@ -415,7 +415,7 @@ mod test {
     #[test]
     fn test_day25_part1() {
         let d: &dyn Day = DAYS[25];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part1(), Answer::None);
     }
     
     #[test]
