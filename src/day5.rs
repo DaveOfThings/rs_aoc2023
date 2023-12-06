@@ -11,7 +11,6 @@ lazy_static! {
     static ref CO_RANGE_RE: Regex = Regex::new("([\\d]+) ([\\d]+) ([\\d]+)").unwrap();
 }
 
-
 #[derive(Debug)]
 struct CoRange {
     start1: usize,
@@ -22,16 +21,6 @@ struct CoRange {
 struct Input {
     seeds: Vec<usize>,
     mappings: [Vec<CoRange>; 7],
-    /*
-    seed_to_soil: Vec<CoRange>,
-    soil_to_fertilizer: Vec<CoRange>,
-    fertilizer_to_water: Vec<CoRange>,
-    water_to_light: Vec<CoRange>,
-    light_to_temp: Vec<CoRange>,
-    temp_to_hum: Vec<CoRange>,
-    hum_to_loc: Vec<CoRange>,
-    */
-
 }
 
 pub struct Day5<'a> {
@@ -93,27 +82,53 @@ impl<'a> Day5<'a> {
         Input { seeds, mappings }
     }
 
-    fn seed_location(&self, input: &Input, seed: usize) -> usize {
+    // returns (location, range_len) 
+    // location - the location mapped to by input seed.
+    // range_len - the distance to the next discontinuity.
+    fn seed_location(&self, input: &Input, seed: usize) -> (usize, usize) {
         let mut n = seed;
+        let mut range = std::usize::MAX;
 
-        // print!("Seed {n}");
         for mapping in 0..7 {
             // Look through the rules, to map this to a new range, otherwise
             // destination is the same.
             for co_range in &input.mappings[mapping] {
                 if n >= co_range.start2 && n < co_range.start2+co_range.len {
-                    //
+
+                    let new_range = co_range.len - (n - co_range.start2);
                     n = n - co_range.start2 + co_range.start1;
+                    
+                    if new_range < range {
+                        range = new_range;
+                    }
                     break;
                 }
             }
-            // print!("-> {n}");
         }
 
-        // println!();
-
-        n
+        (n, range)
     }
+
+    fn min_location(&self, input: &Input, start: usize, len: usize) -> usize {
+        let mut min = std::usize::MAX;
+
+        let mut current = start;
+        while current < start+len {
+            // Get location *and range_len* of seed <current>
+            // The range is the number of locations up from current
+            // to the next discontinuity
+            let (location, range_len) = self.seed_location(input, current);
+
+            if location < min {
+                min = location;
+            }
+            
+            current += range_len;
+        }
+
+        min
+    }
+
 
 }
 
@@ -122,36 +137,25 @@ impl<'a> Day for Day5<'a> {
         let input = self.read_input(false);
 
         let min = input.seeds.iter().map(|seed| self.seed_location(&input, *seed)).min().unwrap();
-        Answer::Numeric(min)
+        Answer::Numeric(min.0)
     }
 
     fn part2(&self) -> Answer {
         let input = self.read_input(false);
 
-        println!("---------------------------------- A");
+        assert!(input.seeds.len() % 2 == 0);
 
-        let mut min1 = std::usize::MAX;
-        for seed in input.seeds[0]..input.seeds[0]+input.seeds[1] {
-            println!("Seed: {seed}");
-            let loc = self.seed_location(&input, seed);
-            if loc < min1 {
-                min1 = loc;
+        let mut min = std::usize::MAX;
+
+        for n in (0..input.seeds.len()).step_by(2) {
+            let start = input.seeds[n];
+            let len = input.seeds[n+1];
+
+            let range_min = self.min_location(&input, start, len);
+            if range_min < min {
+                min = range_min;
             }
         }
-        
-        println!("---------------------------------- B");
-
-        let min2 = (input.seeds[2]..input.seeds[2]+input.seeds[3])
-            .map(|seed| self.seed_location(&input, seed))
-            .min().unwrap();
-        println!("---------------------------------- C");
-
-        let min = if min1 < min2 {
-            min1 
-        } 
-        else {
-            min2
-        };
 
         Answer::Numeric(min)
     }
@@ -180,10 +184,20 @@ mod tests {
         let d = Day5::new("examples/day5_example1.txt");
         let input = d.read_input(false);
 
-        assert_eq!(d.seed_location(&input, 79), 82);
-        assert_eq!(d.seed_location(&input, 14), 43);
-        assert_eq!(d.seed_location(&input, 55), 86);
-        assert_eq!(d.seed_location(&input, 13), 35);
+        assert_eq!(d.seed_location(&input, 79), (82, 3));
+        assert_eq!(d.seed_location(&input, 14), (43, 1));
+        assert_eq!(d.seed_location(&input, 55), (86, 4));
+        assert_eq!(d.seed_location(&input, 13), (35, 1));
+    }
+
+    #[test]
+    fn test_min_location() {
+        let d = Day5::new("examples/day5_example1.txt");
+        let input = d.read_input(false);
+
+        
+        assert_eq!(d.min_location(&input, 79, 14), 46);
+        assert_eq!(d.min_location(&input, 55, 13), 56);
     }
 
     #[test]
@@ -191,5 +205,12 @@ mod tests {
         let d = Day5::new("examples/day5_example1.txt");
 
         assert_eq!(d.part1(), Answer::Numeric(35));
+    }
+
+    #[test]
+    fn test_p2() {
+        let d = Day5::new("examples/day5_example1.txt");
+
+        assert_eq!(d.part2(), Answer::Numeric(46));
     }
 }
