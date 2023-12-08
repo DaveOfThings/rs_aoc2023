@@ -223,13 +223,13 @@ mod test {
     #[test]
     fn test_day7_part1() {
         let d: &dyn Day = DAYS[7];
-        assert_eq!(d.part1(), Answer::None);
+        assert_eq!(d.part1(), Answer::Numeric(255048101));
     }
     
     #[test]
     fn test_day7_part2() {
         let d: &dyn Day = DAYS[7];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part2(), Answer::Numeric(253718286));
     }
         
     #[test]
