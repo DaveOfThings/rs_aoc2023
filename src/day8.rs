@@ -240,7 +240,7 @@ impl<'a> Day for Day8<'a> {
 #[cfg(test)]
 mod tests {
 
-    use crate::{Day, Answer, Day8};
+    use crate::{Day8};
 
     #[test]
     fn test_input_ex1_p1() {        
