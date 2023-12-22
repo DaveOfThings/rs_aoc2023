@@ -1,4 +1,4 @@
-use std::{collections::{HashMap, HashSet}, fs::File, io::BufReader, io::BufRead};
+use std::{collections::HashMap, fs::File, io::BufReader, io::BufRead};
 
 use regex::Regex;
 use num::integer::lcm;
@@ -6,10 +6,8 @@ use num::integer::lcm;
 use crate::day::{Day, Answer};
 
 struct NodeInfo {
-    name: String,
     left: String,
     right: String,
-    node_no: usize,
     is_ghost_start: bool,
     is_ghost_end: bool,
 }
@@ -18,8 +16,6 @@ struct Input {
     directions: Vec<char>,
     nodes: Vec<NodeInfo>,
     node_name_to_id: HashMap<String, usize>,
-    // nodes: HashMap<String, (String, String, usize)>,
-    // node_names: Vec<String>,
     node_map: Vec<(usize, usize)>,
 }
 
@@ -69,7 +65,7 @@ impl<'a> Day8<'a> {
                             let is_ghost_end = name.ends_with("Z");
                             // println!("{node_no}: {name}, is_ghost_end {is_ghost_end}");
 
-                            nodes.push(NodeInfo {name: name.to_string(), left, right, node_no, is_ghost_start, is_ghost_end});
+                            nodes.push(NodeInfo {left, right, is_ghost_start, is_ghost_end});
                             node_name_to_id.insert(name, node_no);
                         }
                         None => {}
@@ -145,6 +141,8 @@ impl<'a> Day8<'a> {
             history.insert((loc, dir_index), (steps, endings));
 
             steps += 1;
+
+
             loc = match input.directions[dir_index] {
                 'L' => {
                     input.node_map[loc].0
@@ -167,12 +165,6 @@ impl<'a> Day8<'a> {
                 (period_start, prior_endings) = history[&(loc, dir_index)];
                 period_len = steps - period_start;
                 endings_per_period = endings - prior_endings;
-                println!("Repeating!");
-                println!("    location: {start} {}", &input.nodes[start].name);
-                println!("    start: {period_start}");
-                println!("    period: {period_len}");
-                println!("    endings_per: {endings_per_period}");
-                println!("    ending at {last_ending}");
                 repeating = true;
             }
         }
@@ -189,9 +181,7 @@ impl<'a> Day8<'a> {
 
                 let initial = periodicity.0;
                 let period = periodicity.1;
-                let ending_offset = periodicity.3;
-                let modulo = (ending_offset) % period;
-                let mod_info = (initial, period, modulo);
+                let mod_info = (initial, period, 0);  // the repeat happens when modulus is zero.  That's just baked in to the input.
 
                 // initial, divisor, modulus
                 to_satisfy.insert(n, mod_info);
@@ -202,11 +192,8 @@ impl<'a> Day8<'a> {
         let mut steps = 0;
         let mut increment = 1;
         let mut to_remove: Vec<usize> = Vec::new();
-        let mut sub_steps = 0;
         while &to_satisfy.len() > &0 {
-            
-            println!("steps: {steps} sub-steps: {sub_steps}");
-            assert!(sub_steps < 200);
+            steps += increment;
 
             for (k, constraint) in &to_satisfy {
                 // check if this is satisfied now.
@@ -214,13 +201,8 @@ impl<'a> Day8<'a> {
                 if (steps % constraint.1) == constraint.2 {
                     // It's satisfied!
                     // Update the step increment to keep it satisfied.
-                    println!("{steps}, Satisfied constraint for {k}");
-                    sub_steps = 0;
-
-                    println!("Increment is now lcm({}, {})", increment, constraint.1);
 
                     increment = lcm(increment, constraint.1);
-                    println!("    = {}", increment);
                     
                     // Remove this constraint
                     to_remove.push(*k);
@@ -232,12 +214,6 @@ impl<'a> Day8<'a> {
                 to_satisfy.remove(n);
             }
             to_remove.clear();
-
-            if to_satisfy.len() > 0 {
-                steps += increment;
-                sub_steps += 1;
-                // println!("Steps = {steps}");
-            }
         }
 
         steps
@@ -308,14 +284,13 @@ mod tests {
 
         assert_eq!(d.ghost_steps(&input), 6);
     }
-
         
     #[test]
     fn test_input_ghost_steps() {        
         let d = Day8::new("data_aoc2023/day8.txt");
         let input = d.read_input(false);
 
-        assert_eq!(d.ghost_steps(&input), 6);
+        assert_eq!(d.ghost_steps(&input), 9177460370549);
     }
 
     #[test]
@@ -325,7 +300,7 @@ mod tests {
 
         for n in 0..input.nodes.len() {
             if input.nodes[n].is_ghost_start {
-                println!("Testing start: {n} {}", input.nodes[n].name);
+                // println!("Testing start: {n} {}", input.nodes[n].name);
                 let results = d.periodicity(&input, n);
                 match n {
                     0 => { 
@@ -349,7 +324,6 @@ mod tests {
 
         for n in 0..input.nodes.len() {
             if input.nodes[n].is_ghost_start {
-                println!("Testing start: {n} {}", input.nodes[n].name);
                 let results = d.periodicity(&input, n);
                 match n {
                     39 => { 
