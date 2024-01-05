@@ -7,22 +7,22 @@ use regex::Regex;
 lazy_static! {
     static ref RECORD_RE: Regex = Regex::new("([\\.\\#\\?]+) ([0-9,]+)").unwrap();
     static ref START_Q_RE: Regex = Regex::new("^(\\.*[\\?])").unwrap();
-    static ref RUN0_RE: Regex = Regex::new("^([\\.\\?]*)").unwrap();
-    static ref RUN1_RE: Regex = Regex::new("^(\\.*[\\#\\?]{1}[\\.\\?$])").unwrap();
-    static ref RUN2_RE: Regex = Regex::new("^(\\.*[\\#\\?]{2}[\\.\\?$])").unwrap();
-    static ref RUN3_RE: Regex = Regex::new("^(\\.*[\\#\\?]{3}[\\.\\?$])").unwrap();
-    static ref RUN4_RE: Regex = Regex::new("^(\\.*[\\#\\?]{4}[\\.\\?$])").unwrap();
-    static ref RUN5_RE: Regex = Regex::new("^(\\.*[\\#\\?]{5}[\\.\\?$])").unwrap();
-    static ref RUN6_RE: Regex = Regex::new("^(\\.*[\\#\\?]{6}[\\.\\?$])").unwrap();
-    static ref RUN7_RE: Regex = Regex::new("^(\\.*[\\#\\?]{7}[\\.\\?$])").unwrap();
-    static ref RUN8_RE: Regex = Regex::new("^(\\.*[\\#\\?]{8}[\\.\\?$])").unwrap();
-    static ref RUN9_RE: Regex = Regex::new("^(\\.*[\\#\\?]{9}[\\.\\?$])").unwrap();
-    static ref RUN10_RE: Regex = Regex::new("^(\\.*[\\#\\?]{10}[\\.\\?$])").unwrap();
-    static ref RUN11_RE: Regex = Regex::new("^(\\.*[\\#\\?]{11}[\\.\\?$])").unwrap();
-    static ref RUN12_RE: Regex = Regex::new("^(\\.*[\\#\\?]{12}[\\.\\?$])").unwrap();
-    static ref RUN13_RE: Regex = Regex::new("^(\\.*[\\#\\?]{13}[\\.\\?$])").unwrap();
-    static ref RUN14_RE: Regex = Regex::new("^(\\.*[\\#\\?]{14}[\\.\\?$])").unwrap();
-    static ref RUN15_RE: Regex = Regex::new("^(\\.*[\\#\\?]{15}[\\.\\?$])").unwrap();
+    static ref RUN0_RE: Regex = Regex::new("^([\\.\\?]*Z?$)").unwrap();
+    static ref RUN1_RE: Regex = Regex::new("^(\\.*[\\#\\?]{1}[\\.\\?Z])").unwrap();
+    static ref RUN2_RE: Regex = Regex::new("^(\\.*[\\#\\?]{2}[\\.\\?Z])").unwrap();
+    static ref RUN3_RE: Regex = Regex::new("^(\\.*[\\#\\?]{3}[\\.\\?Z])").unwrap();
+    static ref RUN4_RE: Regex = Regex::new("^(\\.*[\\#\\?]{4}[\\.\\?Z])").unwrap();
+    static ref RUN5_RE: Regex = Regex::new("^(\\.*[\\#\\?]{5}[\\.\\?Z])").unwrap();
+    static ref RUN6_RE: Regex = Regex::new("^(\\.*[\\#\\?]{6}[\\.\\?Z])").unwrap();
+    static ref RUN7_RE: Regex = Regex::new("^(\\.*[\\#\\?]{7}[\\.\\?Z])").unwrap();
+    static ref RUN8_RE: Regex = Regex::new("^(\\.*[\\#\\?]{8}[\\.\\?Z])").unwrap();
+    static ref RUN9_RE: Regex = Regex::new("^(\\.*[\\#\\?]{9}[\\.\\?Z])").unwrap();
+    static ref RUN10_RE: Regex = Regex::new("^(\\.*[\\#\\?]{10}[\\.\\?Z])").unwrap();
+    static ref RUN11_RE: Regex = Regex::new("^(\\.*[\\#\\?]{11}[\\.\\?Z])").unwrap();
+    static ref RUN12_RE: Regex = Regex::new("^(\\.*[\\#\\?]{12}[\\.\\?Z])").unwrap();
+    static ref RUN13_RE: Regex = Regex::new("^(\\.*[\\#\\?]{13}[\\.\\?Z])").unwrap();
+    static ref RUN14_RE: Regex = Regex::new("^(\\.*[\\#\\?]{14}[\\.\\?Z])").unwrap();
+    static ref RUN15_RE: Regex = Regex::new("^(\\.*[\\#\\?]{15}[\\.\\?Z])").unwrap();
     static ref RUN_RES: Vec<&'static Regex> = vec![
         &RUN0_RE,
         &RUN1_RE,
@@ -307,43 +307,54 @@ impl Record {
         let mut arrangements = 0;
 
         // If we expect no more runs and the condition can support this, this is a valid arrangement.
-        if runs.len() == 0 && RUN0_RE.is_match(condition) {
-            arrangements = 1;
-        }
-        else {
-            // We need a run of length runs[0]
-            let len_needed = runs[0];
-            let run_re = RUN_RES[len_needed];
-
-            // Can we have a run of the needed length here?
-            match run_re.find(condition) {
-                Some(m) => {
-                    // The first matched.len() chars of condition can be treated as the next run
-                    let processed = m.len();
-                    // println!("For run of {len_needed}, processed {processed}: {}", m.as_str());
-                    arrangements += Record::_arrangements2(&condition[processed..], &runs[1..]);
-                }
-                None => {}
+        if runs.len() == 0 {
+            if RUN0_RE.is_match(condition) {
+                // We expect no more runs and this is possible so we have a match
+                // println!("Matched on empty end.");
+                return 1;
             }
-
-            match START_Q_RE.find(condition) {
-                Some(m) => {
-                    let processed = m.len();
-                    // println!("Question-start, processed {processed}: {}", m.as_str());
-                    arrangements += Record::_arrangements2(&condition[processed..], runs);
-                }
-                None => {}
+            else {
+                // We expect no more runs but this isn't possible, no match.
+                // println!("Mismatch on end.");
+                return 0;
             }
-
-            // If neither of the above are true, the search has hit a dead end and 
-            // arrangements will be left at 0.
         }
+
+        
+        // We need a run of length runs[0]
+        let len_needed = runs[0];
+        let run_re = RUN_RES[len_needed];
+
+        // Can we have a run of the needed length here?
+        match run_re.find(condition) {
+            Some(m) => {
+                // The first matched.len() chars of condition can be treated as the next run
+                let processed = m.len();
+                // println!("For run of {len_needed}, processed {processed}: {}", m.as_str());
+                arrangements += Record::_arrangements2(&condition[processed..], &runs[1..]);
+            }
+            None => {}
+        }
+
+        match START_Q_RE.find(condition) {
+            Some(m) => {
+                let processed = m.len();
+                // println!("Question-start, processed {processed}: {}", m.as_str());
+                arrangements += Record::_arrangements2(&condition[processed..], runs);
+            }
+            None => {}
+        }
+
+        // If neither of the above are true, the search has hit a dead end and 
+        // arrangements will be left at 0.
 
         arrangements
     }
 
     fn arrangements2(&self) -> usize {
-        Record::_arrangements2(&self.condition, &self.runs)
+        let mut augmented_cond = String::from(&self.condition);
+        augmented_cond.push('Z');
+        Record::_arrangements2(&augmented_cond, &self.runs)
     }
 
     fn unfold(&self) -> Record {
@@ -453,17 +464,17 @@ mod test {
     // TODO: Fix the commented out cases.  The new approach seems to work in most cases and it's efficient.
     #[test]
     fn test_unfolded_arrangements() {
-        for (s, n) in [// ("???.### 1,1,3", 1),
+        for (s, n) in [("???.### 1,1,3", 1),
                        (".??..??...?##. 1,1,3", 16384),
-                       // ("?#?#?#?#?#?#?#? 1,3,1,6", 1),
+                       ("?#?#?#?#?#?#?#? 1,3,1,6", 1),
                        ("????.#...#... 4,1,1", 16),
                        ("????.######..#####. 1,6,5", 2500),
-                       // ("?###???????? 3,2,1", 506250)
+                       ("?###???????? 3,2,1", 506250)
                        ] {
                 let record = Record::new(s);
                 let unfolded = record.unfold();
 
-                println!("Testing {}", unfolded.condition);
+                // println!("Testing {}", unfolded.condition);
 
                 let arrangements = unfolded.arrangements2();
 
