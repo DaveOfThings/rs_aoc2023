@@ -343,13 +343,13 @@ mod test {
     #[test]
     fn test_day17_part1() {
         let d: &dyn Day = DAYS[17];
-        assert_eq!(d.part1(), Answer::None);
+        assert_eq!(d.part1(), Answer::Numeric(1263));
     }
     
     #[test]
     fn test_day17_part2() {
         let d: &dyn Day = DAYS[17];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part2(), Answer::Numeric(1411)); // 1408 too low achieved by reversing dir.
     }
         
     #[test]
