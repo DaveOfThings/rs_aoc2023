@@ -246,7 +246,7 @@ impl Input {
         // get the graph representation of possible movements.
         let g = self.to_graph(ultra);
         
-        println!("We have a directed graph and that's exciting.");
+        // println!("We have a directed graph and that's exciting.");
 
         // Do Dijkstra to get cost (heat loss) to every node.
         let start = NodeId{ row: 0, col: 0, dir:Direction::Right, momentum: 0 };
@@ -256,7 +256,7 @@ impl Input {
             None,                 // goal
             |edge| *edge.2  // edge cost
         );
-        println!("We have dijkstra results and that's more exciting.");
+        // println!("We have dijkstra results and that's more exciting.");
 
         // The final position corresponds to several graph nodes
         // (because there are many momentum states)
