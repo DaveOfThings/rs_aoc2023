@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs::File, io::{BufReader, BufRead}};
+use std::{cmp::{max, min}, collections::HashMap, fs::File, io::{BufReader, BufRead}};
 
 use crate::day::{Day, Answer};
 
@@ -147,6 +147,129 @@ impl Part {
     }
 }
 
+#[derive(Clone, Copy)]
+struct Domain {
+    x_min: usize,
+    x_max: usize,
+    m_min: usize,
+    m_max: usize,
+    a_min: usize,
+    a_max: usize,
+    s_min: usize,
+    s_max: usize,
+}
+
+const EMPTY_DOMAIN: Domain = Domain {
+    x_min: 1,
+    x_max: 0,
+    m_min: 1,
+    m_max: 0,
+    a_min: 1,
+    a_max: 0,
+    s_min: 1,
+    s_max: 0,
+};
+
+impl Domain {
+    fn new() -> Domain {
+        Domain { 
+            x_min: 1, x_max: 4000,
+            m_min: 1, m_max: 4000,
+            a_min: 1, a_max: 4000,
+            s_min: 1, s_max: 4000,
+        }
+    }
+
+    // split into subdomains for condition false, condition true
+    fn split(&self, cond: &Condition) -> (Domain, Domain) {
+        let mut f_domain = *self; // copy
+        let mut t_domain = *self; // copy
+
+        match cond {
+            Condition::True => {
+                // f_domain should be empty
+                f_domain = EMPTY_DOMAIN;
+
+                // t_domain is unchangeed
+            }
+            Condition::XGt(value) => {
+                // Modify X components
+                f_domain.x_max = min(f_domain.x_max, *value);
+                t_domain.x_min = max(t_domain.x_min, *value+1);
+            }
+            Condition::XLt(value) => {
+                // Modify X components
+                t_domain.x_max = min(f_domain.x_max, *value-1);
+                f_domain.x_min = max(t_domain.x_min, *value);
+            }
+            Condition::MGt(value) => {
+                // Modify X components
+                f_domain.m_max = min(f_domain.m_max, *value);
+                t_domain.m_min = max(t_domain.m_min, *value+1);
+            }
+            Condition::MLt(value) => {
+                // Modify X components
+                t_domain.m_max = min(f_domain.m_max, *value-1);
+                f_domain.m_min = max(t_domain.m_min, *value);
+            }
+            Condition::AGt(value) => {
+                // Modify X components
+                f_domain.a_max = min(f_domain.a_max, *value);
+                t_domain.a_min = max(t_domain.a_min, *value+1);
+            }
+            Condition::ALt(value) => {
+                // Modify X components
+                t_domain.a_max = min(f_domain.a_max, *value-1);
+                f_domain.a_min = max(t_domain.a_min, *value);
+            }
+            Condition::SGt(value) => {
+                // Modify X components
+                f_domain.s_max = min(f_domain.s_max, *value);
+                t_domain.s_min = max(t_domain.s_min, *value+1);
+            }
+            Condition::SLt(value) => {
+                // Modify X components
+                t_domain.s_max = min(f_domain.s_max, *value-1);
+                f_domain.s_min = max(t_domain.s_min, *value);
+            }
+        }
+
+        (f_domain, t_domain)
+    }
+
+    fn size(&self) -> usize {
+        let x_size = if self.x_max >= self.x_min {
+            1 + self.x_max - self.x_min
+        }
+        else {
+            0
+        };
+
+        let m_size = if self.m_max >= self.m_min {
+            1 + self.m_max - self.m_min
+        }
+        else {
+            0
+        };
+
+        let a_size = if self.a_max >= self.a_min {
+            1 + self.a_max - self.a_min
+        }
+        else {
+            0
+        };
+
+        let s_size = if self.s_max >= self.s_min {
+            1 + self.s_max - self.s_min
+        }
+        else {
+            0
+        };
+
+        x_size * m_size * a_size * s_size
+    }
+}
+
 struct Input {
     workflows: HashMap<String, WorkFlow>,
     parts: Vec<Part>,
@@ -225,6 +348,50 @@ impl Input {
             .map(|part| part.rating())
             .sum()
     }
+
+    fn combos_(&self, wf_name: &str, index: usize, domain: Domain) -> usize {
+        let wf = self.workflows.get(wf_name).unwrap();
+        let (cond, action) = &wf.steps[index];
+
+        let combos = match cond {
+            Condition::True => {
+                // A
+                // No split, just pursue the action
+                match &action {
+                    Action::Accept => domain.size(),
+                    Action::Reject => 0,
+                    Action::Continue(next_wf) => {
+                        self.combos_(next_wf, 0, domain)
+                    }
+                }
+            }
+            _ => {
+                // B
+                let (f_domain, t_domain) = domain.split(&cond);
+                // Evaluate size when condition is true and we take the action
+                let t_size = match &action {
+                    Action::Accept => t_domain.size(),
+                    Action::Reject => 0,
+                    Action::Continue(next_wf) => {
+                        self.combos_(next_wf, 0, t_domain)
+                    }
+                };
+
+                // Evaluate size when condition is false and we don't take the action
+                let f_size = self.combos_(wf_name, index+1, f_domain);
+
+                t_size + f_size
+            }
+        };
+
+        combos
+    }
+
+    fn combos(&self) -> usize {
+        let domain = Domain::new();
+
+        self.combos_("in", 0, domain)
+    }
 }
 
 pub struct Day19<'a> {
@@ -245,7 +412,9 @@ impl<'a> Day for Day19<'a> {
     }
 
     fn part2(&self) -> Answer {
-        Answer::None
+        let input = Input::read(self.input_filename);
+
+        Answer::Numeric(input.combos())
     }
 }
 
@@ -294,4 +463,19 @@ mod test {
 
         assert_eq!(d.part1(), Answer::Numeric(19114));
     }
+
+    #[test]
+    fn test_combos() {
+        let input = Input::read("examples/day19_example1.txt");
+
+        assert_eq!(input.combos(), 167409079868000);
+    }
+
+    #[test]
+    fn test_part2() {
+        let d = Day19::new("examples/day19_example1.txt");
+
+        assert_eq!(d.part2(), Answer::Numeric(167409079868000));
+    }
+
 }

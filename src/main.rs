@@ -133,7 +133,7 @@ fn main() {
 #[cfg(test)]
 mod test {
     use crate::day::{Day, Answer};
-    use crate::{DAYS};
+    use crate::DAYS;
 
     #[test]
     fn test_day0_part1() {
@@ -373,7 +373,7 @@ mod test {
     #[test]
     fn test_day19_part2() {
         let d: &dyn Day = DAYS[19];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part2(), Answer::Numeric(135506683246673));
     }
         
     #[test]
