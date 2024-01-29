@@ -66,47 +66,58 @@ struct Module {
     name: String,
 
     // inputs:
-    inputs: Vec<Rc<Module>>,
+    inputs: Vec<Box<Module>>,
 
     // outputs
-    outputs: Vec<Rc<Module>>,
+    outputs: Vec<Box<Module>>,
 
     // state
     state: bool,
 }
 
 impl Module {
-    pub fn new(mod_type: &ModType, name: &str) -> Module {
+    pub fn new(mod_type: ModType, name: &str) -> Box<Module> {
+
         // TODO
 
-        Module { mod_type: mod_type, name: name.to_string(), outputs: Vec::new(), state: false }
+        Box::new( Module { mod_type, name: name.to_string(), inputs: Vec::new(), outputs: Vec::new(), state: false } )
     }
 
-    pub fn connect_to(&self, other: &Module) {
+    pub fn register_output(&self, other: Box<Module>) {
+        // TODO
+    }
+
+    pub fn register_input(&self, other: Box<Module>) {
         // TODO
     }
 }
 
-struct Sim<'a> {
-    modules: HashMap<String, Module>,     // states of nodes
+struct Sim {
+    modules: HashMap<String, Box<Module>>,     // states of nodes
     events: VecDeque<(bool, String)>,
 
     low_pulses: usize,
     high_pulses: usize,
 }
 
-impl<'a> Sim<'a> {
+impl<'a> Sim {
     fn new(input: &'a Input) -> Sim {
-        let modules: HashMap<String, Module> = HashMap::new(); // states of nodes
+        let mut modules: HashMap<String, Box<Module>> = HashMap::new(); // states of nodes
 
         // TODO : Create Modules from input
         for line in input.lines {
             let name = line.1;
-            let module = Module::new(line.0, name);
-            modules.insert(name, mod);
+            let module = Module::new(line.0, &name);
+            modules.insert(name, module);
         }
-        input.lines.iter()
-            .map(|line| Module::new(line.0, line.1)).collect()
+
+        // Connect inputs / outputs
+        for (k, v) in modules {
+            for output in v.outputs {
+                v.register_output(output);
+                output.register_input(v);
+            }
+        }
 
         // TODO : Connect modules to each other
 
@@ -139,20 +150,21 @@ impl<'a> Sim<'a> {
             }
 
             // Locate the node
-            if let Some(node) = self.modules.get(name) {
+            if let Some(node) = self.modules.get(&name) {
                 // Update the node and propagate the pulses
                 match node.mod_type {
                     ModType::Node => {}
-                    ModType::Nand(inputs) => {
-                        // remember this pulse type for this input.
-                        // TODO : Associate this pulse with its source
-                        // TODO : Have AND type gates know their inputs.
-                        input.set()
+                    ModType::Nand => {
+                        // Evaluate all inputs, set state false if all inputs true
+
+                        // TODO
                     }
                     ModType::FlipFlop => {
-
+                        // TODO
                     }
                 }
+
+                // TODO: Propagate a pulse to each output
             }
         }
     }
