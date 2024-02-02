@@ -66,62 +66,71 @@ struct Module {
     name: String,
 
     // inputs:
-    inputs: Vec<Box<Module>>,
+    inputs: HashMap<String, bool>,
 
     // outputs
-    outputs: Vec<Box<Module>>,
+    outputs: Vec<String>,
 
     // state
     state: bool,
 }
 
 impl Module {
-    pub fn new(mod_type: ModType, name: &str) -> Box<Module> {
-
-        // TODO
-
-        Box::new( Module { mod_type, name: name.to_string(), inputs: Vec::new(), outputs: Vec::new(), state: false } )
+    pub fn new(mod_type: ModType, name: &str) -> Module {
+        Module { mod_type, name: name.to_string(), inputs: HashMap::new(), outputs: Vec::new(), state: false }
     }
 
-    pub fn register_output(&self, other: Box<Module>) {
-        // TODO
+    fn register_output(&mut self, other: &str) {
+        self.outputs.push(other.to_string());
     }
 
-    pub fn register_input(&self, other: Box<Module>) {
-        // TODO
+    fn register_input(&mut self, other: &str) {
+        self.inputs.insert(other.to_string(), false);
     }
 }
 
 struct Sim {
-    modules: HashMap<String, Box<Module>>,     // states of nodes
-    events: VecDeque<(bool, String)>,
+    modules: HashMap<String, Module>,     // states of nodes
+    events: VecDeque<(String, String, bool)>,
 
     low_pulses: usize,
     high_pulses: usize,
 }
 
-impl<'a> Sim {
-    fn new(input: &'a Input) -> Sim {
-        let mut modules: HashMap<String, Box<Module>> = HashMap::new(); // states of nodes
+impl Sim {
+    fn new(input: &Input) -> Sim {
+        let mut modules: HashMap<String, Module> = HashMap::new(); // states of nodes
 
-        // TODO : Create Modules from input
-        for line in input.lines {
-            let name = line.1;
+        // Create Modules from input
+        for line in &input.lines {
+            let name = &line.1;
             let module = Module::new(line.0, &name);
-            modules.insert(name, module);
+            modules.insert(name.to_string(), module);
         }
 
         // Connect inputs / outputs
-        for (k, v) in modules {
-            for output in v.outputs {
-                v.register_output(output);
-                output.register_input(v);
+        for line in &input.lines {
+            let name = &line.1;
+
+            for out_name in &line.2 {
+                let node1 = modules.get_mut(name).unwrap();
+                node1.register_output(out_name);
             }
         }
 
-        // TODO : Connect modules to each other
+        // Connect inputs / outputs
+        for line in &input.lines {
+            let name = &line.1;
 
-        let events: VecDeque<(bool, String)> = VecDeque::new(); // event queue
+            for out_name in &line.2 {
+                if let Some(node2) = modules.get_mut(out_name) {
+                    node2.register_input(name);
+                }
+            }
+        }
+
+        // Event is (from_name, to_name, state)
+        let events: VecDeque<(String, String, bool)> = VecDeque::new(); // event queue
         Sim {modules, events, low_pulses: 0, high_pulses: 0 }
     }
 
@@ -132,14 +141,14 @@ impl<'a> Sim {
     // simulate a button press
     fn button(&mut self) {
         // push one event, a low signal to 'broadcaster'
-        self.events.push_back( (false, "broadcaster".to_string()) );
+        self.events.push_back( ("button".to_string(), "broadcaster".to_string(), false) );
     }
 
     fn sim(&mut self) {
          // run until the event queue is empty
         while !self.events.is_empty() {
             // pop an event
-            let (high, name) = self.events.pop_front().unwrap();
+            let (from_name, to_name, high) = self.events.pop_front().unwrap();
 
             // count it
             if high {
@@ -149,22 +158,64 @@ impl<'a> Sim {
                 self.low_pulses += 1;
             }
 
-            // Locate the node
-            if let Some(node) = self.modules.get(&name) {
-                // Update the node and propagate the pulses
-                match node.mod_type {
-                    ModType::Node => {}
-                    ModType::Nand => {
-                        // Evaluate all inputs, set state false if all inputs true
+            let mut final_state = false;
 
-                        // TODO
+            // Locate the node
+            if let Some(node) = self.modules.get_mut(&to_name) {
+                final_state = node.state;
+
+                // Update the node and propagate the pulses
+                let out_pulse = match node.mod_type {
+                    ModType::Node => {
+                        // Propagate pulses to all outputs
+                        final_state = high;
+                        Some(final_state)
                     }
+                    ModType::Nand => {
+
+                        // TODO: Fix again.  Initially all inputs should be remembered as low.
+
+                        // Update this input
+                        node.inputs.insert(from_name, high);
+
+                        // Evaluate all inputs, set state false if all inputs true
+                        let mut all_true = true;
+                        for (other_name, other_state) in &node.inputs {
+                            if *other_state == false {
+                                all_true = false;
+                                break;
+                            }
+                        }
+
+                        final_state = !all_true;
+                        Some(final_state)
+                    }
+
                     ModType::FlipFlop => {
-                        // TODO
+                        if high {
+                            // With a high pulse input, a flipflop does nothing
+                            None
+                        }
+                        else {
+                            // With a low pulse, switch state, send corresponding pulse
+                            final_state = !node.state;
+                            Some(final_state)
+                        }
+                    }
+                };
+
+                // Propagate a pulse to each output
+                if let Some(out_pulse_high) = out_pulse {
+                    for other_name in &node.outputs {
+                        // TODO: instead of using name string, use reference to module.
+                        self.events.push_back((node.name.to_string(), other_name.to_string(), out_pulse_high));
                     }
                 }
+                
+            }
 
-                // TODO: Propagate a pulse to each output
+            if let Some(node) = self.modules.get_mut(&to_name) {
+                node.state = final_state;
             }
         }
     }
@@ -178,18 +229,23 @@ impl<'a> Sim {
 }
 
 pub struct Day20<'a> {
-    _input_filename: &'a str,
+    input_filename: &'a str,
 }
 
 impl<'a> Day20<'a> {
     pub const fn new(filename: &'a str) -> Self {
-        Self { _input_filename: filename }
+        Self { input_filename: filename }
     }
 }
 
 impl<'a> Day for Day20<'a> {
     fn part1(&self) -> Answer {
-        Answer::None
+        let input = Input::read(self.input_filename);
+        let mut sim = Sim::new(&input);
+
+        sim.run(1000);
+
+        Answer::Numeric(sim.product())
     }
 
     fn part2(&self) -> Answer {
@@ -199,7 +255,7 @@ impl<'a> Day for Day20<'a> {
 
 #[cfg(test)]
 mod test {
-    use crate::day20::{Input, Sim};
+    use crate::{day::{Answer, Day}, day20::{Day20, Input, Sim}};
 
     #[test]
     fn test_input1() {
@@ -215,23 +271,36 @@ mod test {
 
     #[test]
     fn test_sim1() {
-        let input = Input::read("examples/day20_example2.txt");
-        let sim = Sim::new();
+        let input = Input::read("examples/day20_example1.txt");
+        let mut sim = Sim::new(&input);
 
-        sim.run(&input);
+        sim.run(1000);
         assert_eq!(sim.low_pulses, 8000);
         assert_eq!(sim.high_pulses, 4000);
         assert_eq!(sim.product(), 32000000);
     }
 
     #[test]
+    fn test_part1_ex1() {
+        let d = Day20::new("examples/day20_example1.txt");
+        assert_eq!(d.part1(), Answer::Numeric(32000000));
+    }
+
+    #[test]
     fn test_sim2() {
         let input = Input::read("examples/day20_example2.txt");
-        let sim = Sim::new();
+        let mut sim = Sim::new(&input);
 
-        sim.run(&input);
-        assert_eq!(sim.low_pulses, 4250);
+        sim.run(1000);
         assert_eq!(sim.high_pulses, 2750);
+        assert_eq!(sim.low_pulses, 4250);
+
         assert_eq!(sim.product(), 4250*2750);
+    }
+
+    #[test]
+    fn test_part1_ex2() {
+        let d = Day20::new("examples/day20_example2.txt");
+        assert_eq!(d.part1(), Answer::Numeric(4250*2750));
     }
 }
