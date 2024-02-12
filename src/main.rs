@@ -379,13 +379,13 @@ mod test {
     #[test]
     fn test_day20_part1() {
         let d: &dyn Day = DAYS[20];
-        assert_eq!(d.part1(), Answer::Numeric(0));  // > 345110400
+        assert_eq!(d.part1(), Answer::Numeric(730797576));  // > 345110400
     }
     
     #[test]
     fn test_day20_part2() {
         let d: &dyn Day = DAYS[20];
-        assert_eq!(d.part2(), Answer::None);
+        assert_eq!(d.part2(), Answer::None); // < 226732077152352
     }
         
     #[test]

@@ -1,4 +1,4 @@
-use std::{collections::{HashMap, VecDeque}, fs::File, io::{BufRead, BufReader}, rc::Rc};
+use std::{collections::{HashMap, HashSet, VecDeque}, fs::File, io::{BufRead, BufReader}, rc::Rc};
 
 use crate::day::{Day, Answer};
 
@@ -6,7 +6,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 lazy_static! {
-    static ref LINE_RE: Regex = Regex::new("([%&]?)([a-x]+) -> (.*)").unwrap();
+    static ref LINE_RE: Regex = Regex::new("([%&]?)([a-z]+) -> (.*)").unwrap();
 }
 
 #[derive(Clone, Copy)]
@@ -53,6 +53,7 @@ impl Input {
             Some( (mod_type, mod_name, outputs) )
         }
         else {
+            println!("Mismatch on line: '{s}'");
             None
         }
     }
@@ -89,12 +90,34 @@ impl Module {
     }
 }
 
+struct StateSet {
+    // TODO
+}
+
+impl StateSet {
+    // TODO
+}
+
+struct StateSeq {
+    // TODO
+}
+
+impl StateSeq {
+    // TODO
+}
+
 struct Sim {
     modules: HashMap<String, Module>,     // states of nodes
     events: VecDeque<(String, String, bool)>,
 
     low_pulses: usize,
     high_pulses: usize,
+
+    rx_activated: bool,
+    rk_activated: bool,
+    cd_activated: bool,
+    zf_activated: bool,
+    qx_activated: bool,
 }
 
 impl Sim {
@@ -131,10 +154,14 @@ impl Sim {
 
         // Event is (from_name, to_name, state)
         let events: VecDeque<(String, String, bool)> = VecDeque::new(); // event queue
-        Sim {modules, events, low_pulses: 0, high_pulses: 0 }
+        Sim {modules, events, low_pulses: 0, high_pulses: 0, 
+            rx_activated: false, 
+            rk_activated: false, cd_activated: false, zf_activated: false, qx_activated: false }
     }
 
     fn product(&self) -> usize {
+        println!("Low pulses: {}, High pulses: {}.", self.low_pulses, self.high_pulses);
+
         self.low_pulses * self.high_pulses
     }
 
@@ -148,10 +175,30 @@ impl Sim {
          // run until the event queue is empty
         while !self.events.is_empty() {
             // pop an event
-            let (from_name, to_name, high) = self.events.pop_front().unwrap();
+            let (from_name, to_name, in_pulse) = self.events.pop_front().unwrap();
+
+            if (to_name == "rx") && (in_pulse == false) {
+                self.rx_activated = true;
+            }
+
+            if (to_name == "rk") && (in_pulse == false) {
+                self.rk_activated = true;
+            }
+            if (to_name == "cd") && (in_pulse == false) {
+                self.cd_activated = true;
+            }
+            if (to_name == "zf") && (in_pulse == false) {
+                self.zf_activated = true;
+            }
+            if (to_name == "qx") && (in_pulse == false) {
+                self.qx_activated = true;
+            }
+
+
+            // println!("{from_name} -{in_pulse}-> {to_name}");
 
             // count it
-            if high {
+            if in_pulse {
                 self.high_pulses += 1;
             }
             else {
@@ -168,7 +215,8 @@ impl Sim {
                 let out_pulse = match node.mod_type {
                     ModType::Node => {
                         // Propagate pulses to all outputs
-                        final_state = high;
+                        final_state = in_pulse;
+                        // println!("  Propagating {final_state}");
                         Some(final_state)
                     }
                     ModType::Nand => {
@@ -176,11 +224,11 @@ impl Sim {
                         // TODO: Fix again.  Initially all inputs should be remembered as low.
 
                         // Update this input
-                        node.inputs.insert(from_name, high);
+                        node.inputs.insert(from_name, in_pulse);
 
                         // Evaluate all inputs, set state false if all inputs true
                         let mut all_true = true;
-                        for (other_name, other_state) in &node.inputs {
+                        for (_other_name, other_state) in &node.inputs {
                             if *other_state == false {
                                 all_true = false;
                                 break;
@@ -188,27 +236,30 @@ impl Sim {
                         }
 
                         final_state = !all_true;
+                        // println!("  NAND evaluated to {final_state}");
                         Some(final_state)
                     }
 
                     ModType::FlipFlop => {
-                        if high {
+                        if in_pulse {
                             // With a high pulse input, a flipflop does nothing
+                            // println!("  Flip Flop ignoring high pulse.");
                             None
                         }
                         else {
                             // With a low pulse, switch state, send corresponding pulse
                             final_state = !node.state;
+                            // println!("  Flip Flop changed to {final_state}");
                             Some(final_state)
                         }
                     }
                 };
 
                 // Propagate a pulse to each output
-                if let Some(out_pulse_high) = out_pulse {
+                if let Some(out_pulse) = out_pulse {
                     for other_name in &node.outputs {
                         // TODO: instead of using name string, use reference to module.
-                        self.events.push_back((node.name.to_string(), other_name.to_string(), out_pulse_high));
+                        self.events.push_back((node.name.to_string(), other_name.to_string(), out_pulse));
                     }
                 }
                 
@@ -226,6 +277,51 @@ impl Sim {
             self.sim();
         }
     }
+
+    fn get_state_sets(&self, node_name: &str) -> Vec<StateSet> {
+        let sets = Vec::new();
+
+        // TODO
+
+        sets
+    }
+
+    fn compute_count(&self, state_seq: Vec<StateSeq>) -> usize {
+        // TODO
+    }
+
+    fn run_to_rx(&mut self) -> usize {
+        let state_sets = self.get_state_sets("rx");
+        let state_seq: Vec<StateSeq> = state_sets.iter()
+            .map(|set| StateSeq::new(set))
+            .collect();
+
+        let mut count = 0;
+        let mut state_seq_done = state_seq.iter()
+            .fold(true, |acc, seq| acc && seq.complete());
+        self.rx_activated = false;
+
+        // simulate one step at a time until rx is activated or the state sequencer has all
+        // the info it needs
+        while !self.rx_activated && !state_seq_done {
+            count += 1;
+
+            self.button();
+            self.sim();
+
+            // TODO : Update state sequencers
+        }
+
+        if self.rx_activated {
+            // We simulated right up to rx_activated.
+            count
+        }
+        else {
+            // Figure it out from state sequencers
+            self.compute_count(&state_seq)
+        }
+
+    }
 }
 
 pub struct Day20<'a> {
@@ -241,6 +337,7 @@ impl<'a> Day20<'a> {
 impl<'a> Day for Day20<'a> {
     fn part1(&self) -> Answer {
         let input = Input::read(self.input_filename);
+
         let mut sim = Sim::new(&input);
 
         sim.run(1000);
@@ -249,7 +346,13 @@ impl<'a> Day for Day20<'a> {
     }
 
     fn part2(&self) -> Answer {
-        Answer::None
+        // (3733*3793*3947*4057 + 1) = 226732077152352, too large
+
+        let input = Input::read(self.input_filename);
+
+        let mut sim = Sim::new(&input);
+        
+        Answer::Numeric(sim.run_to_rx())
     }
 }
 
@@ -267,6 +370,17 @@ mod test {
     fn test_input2() {
         let input = Input::read("examples/day20_example2.txt");
         assert_eq!(input.lines.len(), 5);
+    }
+
+    #[test]
+    fn test_button1() {
+        let input = Input::read("examples/day20_example1.txt");
+        let mut sim = Sim::new(&input);
+
+        sim.run(1);
+        assert_eq!(sim.low_pulses, 8);
+        assert_eq!(sim.high_pulses, 4);
+        assert_eq!(sim.product(), 32);
     }
 
     #[test]
@@ -302,5 +416,24 @@ mod test {
     fn test_part1_ex2() {
         let d = Day20::new("examples/day20_example2.txt");
         assert_eq!(d.part1(), Answer::Numeric(4250*2750));
+    }
+
+    #[test]
+    fn test_rx() {
+        let input = Input::read("data_aoc2023/day20.txt");
+        let mut sim = Sim::new(&input);
+
+        let count = sim.run_to_rx();
+
+        assert_eq!(count, 0);
+    }
+
+    #[test]
+    fn test_part2() {
+        let d = Day20::new("data_aoc2023/day20.txt");
+
+        let count = d.part2();
+
+        assert_eq!(count, Answer::Numeric(0));
     }
 }
