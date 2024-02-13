@@ -281,6 +281,27 @@ impl Sim {
     fn get_state_sets(&self, node_name: &str) -> Vec<StateSet> {
         let sets = Vec::new();
 
+        // Uh, we have a problem if there are loops in the graph, which there are.
+
+        // Find node by name
+        let module = self.modules.get(node_name).unwrap();
+
+        if module.mod_type == ModType::FlipFlop {
+            // 
+        }
+        else {
+
+        }
+        // If it's not a flip flop
+        //   For each input
+        //     Get the state sets for this input
+        //     Concatenate those into sets
+        // If it is a flip flop
+        //   For each input
+        //     Get the state sets for this input
+        //     Union all the states into one.
+        // 
+
         // TODO
 
         sets
