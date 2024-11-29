@@ -391,9 +391,21 @@ mod test {
     #[test]
     fn test_day21_part1() {
         let d: &dyn Day = DAYS[21];
-        assert_eq!(d.part1(), Answer::None);
+        assert_eq!(d.part1(), Answer::Numeric(3724));
+    }
+            
+    #[test]
+    fn test_day21_part2() {
+        let d: &dyn Day = DAYS[21];
+        assert_eq!(d.part2(), Answer::None);
     }
     
+    #[test]
+    fn test_day22_part1() {
+        let d: &dyn Day = DAYS[22];
+        assert_eq!(d.part1(), Answer::None);
+    }
+        
     #[test]
     fn test_day22_part2() {
         let d: &dyn Day = DAYS[22];
@@ -405,7 +417,18 @@ mod test {
         let d: &dyn Day = DAYS[23];
         assert_eq!(d.part1(), Answer::None);
     }
+            
+    #[test]
+    fn test_day23_part2() {
+        let d: &dyn Day = DAYS[23];
+        assert_eq!(d.part2(), Answer::None);
+    }
     
+    #[test]
+    fn test_day24_part1() {
+        let d: &dyn Day = DAYS[24];
+        assert_eq!(d.part1(), Answer::None);
+    }    
     #[test]
     fn test_day24_part2() {
         let d: &dyn Day = DAYS[24];
