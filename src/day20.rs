@@ -316,7 +316,7 @@ impl Sim {
     }
 
     fn product(&self) -> usize {
-        println!("Low pulses: {}, High pulses: {}.", self.low_pulses, self.high_pulses);
+        // println!("Low pulses: {}, High pulses: {}.", self.low_pulses, self.high_pulses);
 
         self.low_pulses * self.high_pulses
     }
@@ -441,6 +441,7 @@ impl Sim {
         overall_period
     }
 
+    /*
     // create a vector of state sets.  A StateSet represents a group of flipflop modules that
     // communicate with each other.
     fn get_state_sets(&self) -> Vec<StateSet> {
@@ -462,8 +463,8 @@ impl Sim {
         }
 
         sets
-
     }
+    */
 
     /*
     fn run_to_rx(&mut self) -> usize {
@@ -625,6 +626,7 @@ mod test {
 
     }
 
+    /*
     #[test]
     fn test_get_state_sets() {
         let input = Input::read("data_aoc2023/day20.txt");
@@ -633,6 +635,7 @@ mod test {
         let state_sets = sim.get_state_sets();
         assert_eq!(state_sets.len(), 4);       
     }
+    */
 
     #[test]
     fn test_run_to_known_periods() {
