@@ -91,8 +91,6 @@ enum FillAmount {
     // the starting step then run the minimum even number of steps to fill the tile from 
     // that position.  Then run one more step if <steps> was odd XOR It was FullOdd instead
     // of FullEven.
-    // TODO : Confirm that num_of() and test_num_of() adhere to this convention.
-    // TODO : Implement and test count_for() to use this convention.
 }
 
 pub struct Day21<'a> {
@@ -103,8 +101,6 @@ impl<'a> Day21<'a> {
     pub const fn new(filename: &'a str) -> Self {
         Self { input_filename: filename }
     }
-
-// TODO: Replace hard coded constants, 131, 132, 65, etc, with functions derived from input.
 
     fn num_of(start: &FillFrom, amount: &FillAmount, steps: usize, input: &Input) -> usize {
         let w = input.width;
@@ -191,20 +187,20 @@ impl<'a> Day21<'a> {
             FillAmount::Least => {
                 match start {
                     FillFrom::Center => steps,
-                    FillFrom::North | FillFrom::East | FillFrom::South | FillFrom::West => (steps - 66) % w,
-                    FillFrom::NorthEast | FillFrom::NorthWest | FillFrom::SouthEast | FillFrom::SouthWest => (steps - 132) % w
+                    FillFrom::North | FillFrom::East | FillFrom::South | FillFrom::West => (steps - w/2 - 1) % w,
+                    FillFrom::NorthEast | FillFrom::NorthWest | FillFrom::SouthEast | FillFrom::SouthWest => (steps - w - 1) % w
                 }
             }
             FillAmount::NextLeast => {
                 match start {
                     FillFrom::Center => panic!("Center as NextLeast shouldn't happen."),  // Shouldn't happen
-                    FillFrom::North | FillFrom::East | FillFrom::South | FillFrom::West => (steps - 66) % w + w,
-                    FillFrom::NorthEast | FillFrom::NorthWest | FillFrom::SouthEast | FillFrom::SouthWest => (steps - 132) % w + w
+                    FillFrom::North | FillFrom::East | FillFrom::South | FillFrom::West => (steps - w/2 - 1) % w + w,
+                    FillFrom::NorthEast | FillFrom::NorthWest | FillFrom::SouthEast | FillFrom::SouthWest => (steps - w - 1) % w + w
                 }
             }
             FillAmount::FullEven => {
                 let for_even = match start {
-                    FillFrom::Center => 132,
+                    FillFrom::Center => w+1,
                     FillFrom::North | FillFrom::East | FillFrom::South | FillFrom::West => w+w/2,
                     FillFrom::NorthEast | FillFrom::NorthWest | FillFrom::SouthEast | FillFrom::SouthWest => 2*w,
                 };
