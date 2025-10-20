@@ -403,7 +403,10 @@ mod test {
     #[test]
     fn test_day22_part1() {
         let d: &dyn Day = DAYS[22];
-        assert_eq!(d.part1(), Answer::None);
+
+        assert_ne!(d.part1(), Answer::Numeric(483));         // 483 is too high
+        assert_ne!(d.part1(), Answer::Numeric(408));         // 408 is too high
+        assert_eq!(d.part1(), Answer::Numeric(389));
     }
         
     #[test]
