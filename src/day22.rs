@@ -94,11 +94,19 @@ struct Stack<'a> {
 
     // Which blocks occupy each coordinate V3D -> block id
     occupied: HashMap<V3D, usize>,
+
+    // Which blocks support a given one.
+    // supports[block_id] -> a vector of block ids that support this one.
+    supports: Vec<Vec<usize>>,
 }
 
 impl <'a> Stack<'a> {
     fn new(input: &'a Input) -> Stack<'a> {
-        Stack { input, base_height: Vec::new(), occupied: HashMap::new() }
+        let mut stack = Stack { input, base_height: Vec::new(), occupied: HashMap::new(), supports: Vec::new() };
+        stack.run();
+        stack.gen_supports();
+
+        stack
     }
 
     fn drop(&mut self, block_id: usize) {
@@ -107,10 +115,7 @@ impl <'a> Stack<'a> {
         // Check all the (x,y) locations this block will fall on and note the max
         // Z coordinate of all of them.  Also note the supporting blocks at that Z.
 
-        let mut supporters: HashSet<usize> = HashSet::new();
-
-
-        println!("Dropping {block_id} from {:?}", &block.initial_pos);
+        // println!("Dropping {block_id} from {:?}", &block.initial_pos);
 
         // Reduce support_z until it reaches 0 or we find occupied blocks
         let mut support_z: isize = block.initial_pos.z;
@@ -133,7 +138,7 @@ impl <'a> Stack<'a> {
         }
 
         // Record the support Z for each block.  (The block's Z is this +1.)
-        println!("Found support at z={support_z} by {:?}", supporters);
+        // println!("Found support at z={support_z} by {:?}", supporters);
         self.base_height[block_id] = support_z;
 
         // Record this block's occupancy
@@ -180,6 +185,33 @@ impl <'a> Stack<'a> {
         }
     }
 
+    fn gen_supports(&mut self) {
+        // For each block, generate a vector of blocks it rests on.
+        for block_id in 0..self.input.blocks.len() {
+            let block = &self.input.blocks[block_id];
+
+            let mut blocks_below: HashSet<usize> = HashSet::new();
+            let x0 = block.initial_pos.x;
+            let y0 = block.initial_pos.y;
+            let z0 = self.base_height.get(block_id).unwrap()+1;
+
+            for dx in 0..block.size.x {
+                for dy in 0..block.size.y {
+                    if let Some(block_below) = self.occupied.get(&V3D::new(x0+dx, y0+dy, z0-1)) {
+                        blocks_below.insert(*block_below);
+                    }
+                }
+            }
+
+            // Convert set to Vec and store it.
+            self.supports.push(blocks_below.iter()
+                .map(|n| { *n })
+                .collect());
+
+            // println!("Block {block_id} supported by {:?}", self.supports[block_id]);
+        }
+    }
+
     fn is_disintegrateable(&self, block_id: usize) -> bool {
         let block = &self.input.blocks[block_id];
         // Make a set of all blocks above this one.
@@ -197,7 +229,7 @@ impl <'a> Stack<'a> {
                 }
             }
         }
-        println!("Blocks above {block_id}: {blocks_above:?}");
+        // println!("Blocks above {block_id}: {blocks_above:?}");
 
         // For each block above this one, count its supporters.  If it's just one, this 
         // block is not disintegrateable.
@@ -216,12 +248,12 @@ impl <'a> Stack<'a> {
                     }
                 }
             }
-            println!("  Blocks below {supported_block_id}: {blocks_below:?}");
+            // println!("  Blocks below {supported_block_id}: {blocks_below:?}");
             assert!(blocks_below.contains(&block_id));
 
             if blocks_below.len() == 1 {
                 // We can't disintegrate this block.  There's a supported block with only this block for support.
-                println!("Can't disintegrate {block_id}.  The block {supported_block_id} depends on it.");
+                // println!("Can't disintegrate {block_id}.  The block {supported_block_id} depends on it.");
                 return false;
             }
         }
@@ -242,6 +274,61 @@ impl <'a> Stack<'a> {
 
         count
     }
+
+    fn fall_set_size(&self, block_id: usize) -> usize {
+        let mut would_fall: HashSet<usize> = HashSet::new();
+        would_fall.insert(block_id);
+        // println!("What happens if {block_id} removed?");
+
+        // Iterate until no blocks fall any more.
+        let mut falls = true;
+        while falls {
+            // Will reset to true and keep the loop going if any new falls found on this iteration.
+            falls = false;  
+
+            for test_block in 0..self.input.blocks.len() {
+                // We already decided this block would fall
+                if would_fall.contains(&test_block) { continue; }
+
+                // Test block is on the ground, it can't fall.
+                if self.base_height[test_block] == 0 { continue; }
+
+                let supported = self.supports[test_block].iter()
+                    .map(|supporter| { 
+                        // println!("Is supporter {supporter} still ok? {}", !would_fall.contains(supporter) );
+                        !would_fall.contains(supporter)
+                    })
+                    .fold(false, |accum, supported| { accum || supported });
+
+                // println!("  {test_block} supported? {supported}");
+
+                if !supported {
+                    would_fall.insert(test_block);
+                    falls = true;
+                }
+            }
+        }
+
+        // println!("Removing {block_id}, these fall: {would_fall:?}");
+
+        // The falling has settled, return the size of the would_fall hash set minus 1.
+        // (Minus 1 is because we seeded would_fall with block_id but we don't want to count that one)
+        would_fall.len() - 1
+        
+    }
+
+    fn total_would_fall(&self) -> usize {
+        // Start from the top of the stack, create sets of blocks that would fall if
+        // a given block would fall.  For a given block, determine all directly supported
+        // block ids, then get the union of their sets.
+        let mut total = 0;
+
+        for block_id in 0..self.input.blocks.len() {
+            total += self.fall_set_size(block_id);
+        }
+
+        total
+    }
 }
 
 pub struct Day22<'a> {
@@ -257,14 +344,16 @@ impl<'a> Day22<'a> {
 impl<'a> Day for Day22<'a> {
     fn part1(&self) -> Answer {
         let input = Input::read(self.input_filename);
-        let mut stack = Stack::new(&input);
-        stack.run();
+        let stack = Stack::new(&input);
 
         Answer::Numeric(stack.num_disintegrateable())
     }
 
     fn part2(&self) -> Answer {
-        Answer::None
+        let input = Input::read(self.input_filename);
+        let stack = Stack::new(&input);
+
+        Answer::Numeric(stack.total_would_fall())
     }
 }
 
@@ -305,8 +394,7 @@ mod test {
     #[test]
     fn test_stacking() {
         let input = Input::read("examples/day22_example1.txt");
-        let mut stack = Stack::new(&input);
-        stack.run();
+        let stack = Stack::new(&input);
 
         assert_eq!(stack.base_height[0], 0);  // A at 1
         assert_eq!(stack.base_height[1], 1);  // B at 2
@@ -321,8 +409,7 @@ mod test {
     #[test]
     fn test_disintegrateable() {
         let input = Input::read("examples/day22_example1.txt");
-        let mut stack = Stack::new(&input);
-        stack.run();
+        let stack = Stack::new(&input);
 
         assert_eq!(stack.num_disintegrateable(), 5);
     }
@@ -331,10 +418,26 @@ mod test {
     #[test]
     fn test_disintegrateable2() {
         let input = Input::read("examples/day22_example2.txt");
-        let mut stack = Stack::new(&input);
-        stack.run();
+        let stack = Stack::new(&input);
 
         assert_eq!(stack.num_disintegrateable(), 4);
+    }
+
+    #[test]
+    fn test_fall_total() {
+        let input = Input::read("examples/day22_example1.txt");
+        let stack = Stack::new(&input);
+
+        assert_eq!(stack.total_would_fall(), 7);
+    }
+
+    
+    #[test]
+    fn test_fall_total2() {
+        let input = Input::read("data_aoc2023/day22.txt");
+        let stack = Stack::new(&input);
+
+        assert_eq!(stack.total_would_fall(), 70609);
     }
 
     #[test]
