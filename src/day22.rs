@@ -3,6 +3,7 @@ use std::{collections::{HashMap, HashSet}, fs::File, io::{BufRead, BufReader}};
 use crate::day::{Day, Answer};
 use regex::Regex;
 
+// A basic 3D vector with isize components.
 #[derive(Debug, Eq, Hash, PartialEq)]
 struct V3D {
     x: isize,
@@ -26,6 +27,7 @@ impl V3D {
     }
 }
 
+// A block's representation from the input file.
 #[derive(Debug)]
 struct Block {
     initial_pos: V3D,
@@ -33,12 +35,13 @@ struct Block {
 }
 
 impl Block {
-    fn new_p1_p2(p1: V3D, p2: V3D) -> Block {
+    fn new(p1: V3D, p2: V3D) -> Block {
         let size = p2.minus(&p1).plus(&V3D::UNIT);
         Block { initial_pos: p1, size: size}
     }
 }
 
+// The puzzle input 
 struct Input {
     blocks: Vec<Block>
 }
@@ -61,7 +64,7 @@ impl Input {
                                             caps[5].parse::<isize>().unwrap(),
                                             caps[6].parse::<isize>().unwrap());
 
-                blocks.push(Block::new_p1_p2(p1, p2) );
+                blocks.push(Block::new(p1, p2) );
             }
         }
 
@@ -69,28 +72,15 @@ impl Input {
     }
 }
 
+// A stack of blocks.  This represents the state of the puzzle after all blocks have come to rest.
 struct Stack<'a> {
     input: &'a Input,
 
     // Note: blocks are identified by their index into input.blocks: usize
 
-    // Height of each existing column
-    // top_block: HashMap<(isize, isize), (usize, usize)>,  // (x, y) -> (block_id, height)
-
-    // Blocks occupying a given column
-    // blocks_over: HashMap<(isize, isize), Vec<usize>>,  // Which blocks cover this coordinate.
-
     // support height of each block in the stack
     // A block's min Z will be this + 1.  Ground is Z=0.  The first block to fall will have base_height=0 so it's min Z is 1.
     base_height: Vec<isize>,              
-
-    /*
-    // Blocks immediately below a given one.
-    below: HashMap<usize, Vec<usize>>,
-
-    // Blocks immediately above a given one.
-    above: HashMap<usize, Vec<usize>>,
-    */
 
     // Which blocks occupy each coordinate V3D -> block id
     occupied: HashMap<V3D, usize>,
@@ -102,36 +92,41 @@ struct Stack<'a> {
 
 impl <'a> Stack<'a> {
     fn new(input: &'a Input) -> Stack<'a> {
+        // Create the stack with empty base_height, occupied and supports components.
         let mut stack = Stack { input, base_height: Vec::new(), occupied: HashMap::new(), supports: Vec::new() };
+
+        // Run the "falling" process to allow all blocks to settle into supported positions.
+        // This sets the base_height and occupied components of Stack.
         stack.run();
+
+        // Analyze which blocks are supporting each block.
+        // This sets the .supports component of Stack
         stack.gen_supports();
 
+        // Voila, an initialized stack.
         stack
     }
 
+    // Move one block into its settled position.
+    // In order to settle the whole stack properly, blocks need to be dropped in order
+    // from lowest to highest.
     fn drop(&mut self, block_id: usize) {
         let block = &self.input.blocks[block_id];
 
-        // Check all the (x,y) locations this block will fall on and note the max
-        // Z coordinate of all of them.  Also note the supporting blocks at that Z.
-
-        // println!("Dropping {block_id} from {:?}", &block.initial_pos);
-
-        // Reduce support_z until it reaches 0 or we find occupied blocks
+        // Start support_z at the initial height and reduce it until it reaches 0 or we find occupied blocks
         let mut support_z: isize = block.initial_pos.z;
-        let mut supporters: HashSet<usize> = HashSet::new();
+        let mut supporters: usize = 0;
 
-        while support_z > 0 && supporters.is_empty() {
+        while support_z > 0 && (supporters == 0) {
             // drop support_z by one
             support_z -= 1;
 
             // check occupancy for supporters
             for x in block.initial_pos.x..block.initial_pos.x+block.size.x {
                 for y in block.initial_pos.y..block.initial_pos.y+block.size.y {
-                    // println!("  Considering location {x}, {y}");
-                    if let Some(supporter) = self.occupied.get(&V3D::new(x, y, support_z)) {
+                    if self.occupied.contains_key(&V3D::new(x, y, support_z)) {
                         // Found a supporter
-                        supporters.insert(*supporter);
+                        supporters += 1;
                     }
                 }
             }
@@ -153,16 +148,6 @@ impl <'a> Stack<'a> {
         }        
     }
 
-    // The blocks aren't sorted by Z in the input so we can't run the simulation in the input order.
-    // I can think of two approaches:
-    //   1) Initialize all blocks in the position from the snapshot.
-    //      Then go through all of them, moving them down until they hit another block.
-    //      Repeat that until no block moves.
-    //   2) Drop block sequentially in order of their Z coordinate in the input.
-    //      I think this will guarantee that each block only needs to drop once.
-    //
-    // Trying 2 as it seems less disruptive.
-
     fn run(&mut self) {
         self.occupied.clear();
 
@@ -172,7 +157,7 @@ impl <'a> Stack<'a> {
             self.base_height.push(self.input.blocks.get(n).unwrap().initial_pos.z - 1);
         }
 
-        // Go through all blocks, in Z order from 0 to max, dropping each one.
+        // Sort blocks by initial z, lowest to highest, creating a vector of (z, block_id)
         let mut block_ids = self.input.blocks.iter()
             .enumerate()
             .map(|(block_id, block)| {
@@ -180,11 +165,15 @@ impl <'a> Stack<'a> {
             })
             .collect::<Vec<(isize, usize)>>();
         block_ids.sort();
+
+        // Go through all blocks, in Z order from 0 to max, dropping each one.
         for (_height, block_id) in &block_ids {
             self.drop(*block_id);
         }
     }
 
+    // Find and record all the blocks supporting each block.
+    // self.supports[supported block id: usize] -> Vec<supporting block id: usize>
     fn gen_supports(&mut self) {
         // For each block, generate a vector of blocks it rests on.
         for block_id in 0..self.input.blocks.len() {
@@ -212,67 +201,19 @@ impl <'a> Stack<'a> {
         }
     }
 
-    fn is_disintegrateable(&self, block_id: usize) -> bool {
-        let block = &self.input.blocks[block_id];
-        // Make a set of all blocks above this one.
-        let mut blocks_above: HashSet<usize> = HashSet::new();
-        let x0 = block.initial_pos.x;
-        let y0 = block.initial_pos.y;
-        let z0 = self.base_height.get(block_id).unwrap()+1;
-
-        for dx in 0..block.size.x {
-            for dy in 0..block.size.y {
-                let dz = block.size.z;
-                if let Some(block_above) = self.occupied.get(&V3D::new(x0+dx, y0+dy, z0+dz)) {
-                    assert_ne!(*block_above, block_id);
-                    blocks_above.insert(*block_above);
-                }
-            }
-        }
-        // println!("Blocks above {block_id}: {blocks_above:?}");
-
-        // For each block above this one, count its supporters.  If it's just one, this 
-        // block is not disintegrateable.
-        for supported_block_id in &blocks_above {
-            let block = &self.input.blocks[*supported_block_id];
-            let mut blocks_below: HashSet<usize> = HashSet::new();
-            let x0 = block.initial_pos.x;
-            let y0 = block.initial_pos.y;
-            let z0 = self.base_height.get(*supported_block_id).unwrap()+1;
-
-            for dx in 0..block.size.x {
-                for dy in 0..block.size.y {
-                    
-                    if let Some(block_below) = self.occupied.get(&V3D::new(x0+dx, y0+dy, z0-1)) {
-                        blocks_below.insert(*block_below);
-                    }
-                }
-            }
-            // println!("  Blocks below {supported_block_id}: {blocks_below:?}");
-            assert!(blocks_below.contains(&block_id));
-
-            if blocks_below.len() == 1 {
-                // We can't disintegrate this block.  There's a supported block with only this block for support.
-                // println!("Can't disintegrate {block_id}.  The block {supported_block_id} depends on it.");
-                return false;
-            }
-        }
-
-        // We didn't find any reason this can't be disintegrated.
-        true
-    }
-
     fn num_disintegrateable(&self) -> usize {
-        // TODO : Use an iter.
-        let mut count = 0;
+        // Start a set of indestructible blocks.
+        let mut id_set: HashSet<usize> = HashSet::new();
 
-        for block_id in 0..self.input.blocks.len() {
-            if self.is_disintegrateable(block_id) {
-                count += 1;
+        // Look at all support sets.  Wherever there's a set of just one, that one is indestructible.
+        for support_set in &self.supports {
+            if support_set.len() == 1 {
+                id_set.insert(support_set[0]);
             }
         }
-
-        count
+    
+        // number of blocks minus number of indestructible blocks = number of disintegrateable blocks.
+        self.input.blocks.len() - id_set.len()
     }
 
     fn fall_set_size(&self, block_id: usize) -> usize {
@@ -287,12 +228,13 @@ impl <'a> Stack<'a> {
             falls = false;  
 
             for test_block in 0..self.input.blocks.len() {
-                // We already decided this block would fall
+                // We already decided this block would fall, skip it.
                 if would_fall.contains(&test_block) { continue; }
 
                 // Test block is on the ground, it can't fall.
                 if self.base_height[test_block] == 0 { continue; }
 
+                // A block is supported if one of its supports is not in the would_fall set.
                 let supported = self.supports[test_block].iter()
                     .map(|supporter| { 
                         // println!("Is supporter {supporter} still ok? {}", !would_fall.contains(supporter) );
@@ -302,6 +244,7 @@ impl <'a> Stack<'a> {
 
                 // println!("  {test_block} supported? {supported}");
 
+                // If the test block is unsupported, record it as fallen
                 if !supported {
                     would_fall.insert(test_block);
                     falls = true;
@@ -317,6 +260,7 @@ impl <'a> Stack<'a> {
         
     }
 
+    // Add up all the fall set sizes over all the blocks.
     fn total_would_fall(&self) -> usize {
         // Start from the top of the stack, create sets of blocks that would fall if
         // a given block would fall.  For a given block, determine all directly supported
@@ -405,18 +349,16 @@ mod test {
         assert_eq!(stack.base_height[6], 4);  // G at 5
     }
 
-    
     #[test]
-    fn test_disintegrateable() {
+    fn test_disintegrateable_a() {
         let input = Input::read("examples/day22_example1.txt");
         let stack = Stack::new(&input);
 
         assert_eq!(stack.num_disintegrateable(), 5);
     }
-
         
     #[test]
-    fn test_disintegrateable2() {
+    fn test_disintegrateable_b() {
         let input = Input::read("examples/day22_example2.txt");
         let stack = Stack::new(&input);
 
